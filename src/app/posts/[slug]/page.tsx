@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getPostBySlug, getPostSlugs } from "@/lib/api";
 import markdownToHtml from "@/lib/markdownToHtml";
 
-export default async function Page({ params }: { params: { slug: string } }) {
+export default async function Page({ params, searchParams }: { params: { slug: string }, searchParams?: any }) {
   const { slug } = params;
   const post = getPostBySlug(slug);
 
