@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.bg-mobile {
+    background-image: url('/mobile_bg.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    min-height: 100vh;
+    width: 100vw;
+    position: relative;
+    z-index: 0;
+}
+
+body.bg-mobile {
+    background-image: url('/mobile_bg.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+.post-bg2 {
+    background-image: url('/mobile_bg2.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
