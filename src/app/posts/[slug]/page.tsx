@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getPostBySlug } from "@/lib/api";
+import { getPostBySlug, getPostSlugs } from "@/lib/api";
 import markdownToHtml from "@/lib/markdownToHtml";
 
 export default async function Page({ params }: { params: { slug: string } }) {
@@ -38,4 +38,9 @@ export default async function Page({ params }: { params: { slug: string } }) {
       </div>
     </main>
   );
+}
+
+export function generateStaticParams() {
+  // .md 확장자 제거
+  return getPostSlugs().map((slug) => ({ slug: slug.replace(/\.md$/, "") }));
 }
