@@ -14,8 +14,22 @@ export function getPostBySlug(slug: string) {
   const fullPath = join(postsDirectory, `${realSlug}.md`);
   const fileContents = fs.readFileSync(fullPath, "utf8");
   const { data, content } = matter(fileContents);
-  // category가 없으면 'uncategorized'로 기본값
-  return { ...data, slug: realSlug, content, category: data.category || 'uncategorized' } as Post;
+  // author는 name만 포함
+  const author = {
+    name: data.author?.name || "Unknown"
+  };
+  return {
+    slug: realSlug,
+    title: data.title || "Untitled",
+    date: data.date || "",
+    coverImage: data.coverImage || "",
+    author,
+    excerpt: data.excerpt || "",
+    ogImage: data.ogImage || { url: "" },
+    content,
+    preview: data.preview,
+    category: data.category || 'uncategorized',
+  };
 }
 
 export function getAllPosts(): Post[] {
