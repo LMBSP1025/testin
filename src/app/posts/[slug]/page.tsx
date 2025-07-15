@@ -10,7 +10,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
     notFound();
   }
 
-  const content = await markdownToHtml(post.content || "");
+  const content = await markdownToHtml(post?.content || "");
 
   return (
     <main className="relative flex flex-col items-center justify-center min-h-screen py-12 px-4">
@@ -24,9 +24,9 @@ export default async function Page({ params }: { params: { slug: string } }) {
         </h1>
       </a>
       {/* 제목 */}
-      <h2 className="text-2xl font-normal text-center mb-2 mt-2">{post.title}</h2>
+      <h2 className="text-2xl font-normal text-center mb-2 mt-2">{post?.title}</h2>
       {/* 저자 */}
-      <div className="text-lg text-center mb-8 text-gray-700">{post.author?.name}</div>
+      <div className="text-lg text-center mb-8 text-gray-700">{post?.author?.name}</div>
       {/* 본문 */}
       <article className="prose prose-lg max-w-xl w-full mx-auto text-center leading-relaxed bg-white/0 shadow-none mb-24" style={{wordBreak: 'keep-all'}}>
         <div dangerouslySetInnerHTML={{ __html: content }} />
