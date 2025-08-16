@@ -103,7 +103,7 @@
     background-repeat: no-repeat;
     background-position: center;
     min-height: 100vh;
-    width: 100vw;
+    width: 100%;
     position: relative;
     z-index: 0;
 }
@@ -113,12 +113,13 @@ body.bg-mobile {
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
-    background-attachment: fixed;
     min-height: 100vh;
 }
 
 body {
     overflow-x: hidden;
+    margin: 0;
+    padding: 0;
 }
 
 .post-bg2 {
@@ -126,7 +127,36 @@ body {
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
-    background-attachment: fixed;
+}
+
+
+/* 강제 가로 텍스트 */
+
+.force-horizontal {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+}
+
+
+/* 모바일 최적화 */
+
+@media (max-width: 768px) {
+    .bg-mobile,
+    body.bg-mobile,
+    .post-bg2 {
+        background-attachment: scroll;
+        background-size: cover;
+        background-position: center;
+    }
+    /* 모바일에서 고정 배경 제거 */
+    .dream-bg::before {
+        position: absolute;
+        background-attachment: scroll;
+    }
+    body::after {
+        position: absolute;
+        background-attachment: scroll;
+    }
 }
 
 

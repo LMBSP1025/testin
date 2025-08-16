@@ -93,11 +93,15 @@ export function getPostSlugs() {
     // .md 확장자 제거하고 slug 반환
     const slugs = files.map(file => {
       let slug = file.replace('.md', '');
+      console.log("getPostSlugs - After .md removal:", { file, slug });
+      
       // 마침표로 끝나는 경우 제거
       slug = slug.replace(/\.$/, '');
+      console.log("getPostSlugs - After period removal:", { file, slug });
+      
       return slug;
     });
-    console.log("getPostSlugs - Processed slugs:", slugs);
+    console.log("getPostSlugs - Final processed slugs:", slugs);
     return slugs;
   } catch (error) {
     console.error("포스트 디렉토리 읽기 실패:", error);

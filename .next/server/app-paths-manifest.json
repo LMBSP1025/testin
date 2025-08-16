@@ -1,8 +1,6 @@
 {
-  "/api/posts/route": "app/api/posts/route.js",
-  "/admin/page": "app/admin/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/category-select/page": "app/category-select/page.js",
   "/admin/dashboard/page": "app/admin/dashboard/page.js",
-  "/api/auth/route": "app/api/auth/route.js",
-  "/admin/edit/[slug]/page": "app/admin/edit/[slug]/page.js",
-  "/api/posts/[slug]/route": "app/api/posts/[slug]/route.js"
+  "/api/latest-image/route": "app/api/latest-image/route.js"
 }
