@@ -213,6 +213,8 @@ export default function EditPost() {
     const end = textarea.selectionEnd;
     const currentContent = formData.content;
     
+    if (!currentContent) return;
+    
     const imageMarkdown = `![${imageDescription || '이미지'}](${imageUrl})`;
     const newContent = currentContent.substring(0, start) + imageMarkdown + currentContent.substring(end);
     

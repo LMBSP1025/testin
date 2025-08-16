@@ -1,6 +1,4 @@
 {
   "/category-select/page": "app/category-select/page.js",
-  "/page": "app/page.js",
-  "/api/latest-image/route": "app/api/latest-image/route.js",
   "/posts/[slug]/page": "app/posts/[slug]/page.js"
 }
