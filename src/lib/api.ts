@@ -234,12 +234,18 @@ export function createPost(postData: CreatePostData, password: string): Post | n
 
 // 글 수정
 export function updatePost(slug: string, postData: UpdatePostData, password: string): Post | null {
+  console.log('updatePost called with:', { slug, hasPostData: !!postData, hasPassword: !!password });
+  
   if (!verifyPassword(password)) {
+    console.error('Password verification failed');
     return null;
   }
 
   const existingPost = getPostBySlug(slug);
+  console.log('Existing post found:', !!existingPost);
+  
   if (!existingPost) {
+    console.error('Existing post not found for slug:', slug);
     return null;
   }
 
@@ -249,6 +255,8 @@ export function updatePost(slug: string, postData: UpdatePostData, password: str
     coverImage: "",
     updatedAt: getCurrentDate(),
   };
+
+  console.log('Updated post data:', { title: updatedPost.title, category: updatedPost.category });
 
   const frontMatter = matter.stringify(updatedPost.content, {
     id: updatedPost.id,
@@ -262,9 +270,31 @@ export function updatePost(slug: string, postData: UpdatePostData, password: str
   });
 
   const filePath = join(postsDirectory, `${slug}.md`);
-  fs.writeFileSync(filePath, frontMatter);
-
-  return updatedPost;
+  console.log('Writing to file path:', filePath);
+  
+  try {
+    // 디렉토리가 존재하는지 확인
+    if (!fs.existsSync(postsDirectory)) {
+      console.log('Posts directory does not exist, creating...');
+      fs.mkdirSync(postsDirectory, { recursive: true });
+    }
+    
+    // 파일 쓰기 권한 확인
+    fs.accessSync(postsDirectory, fs.constants.W_OK);
+    
+    fs.writeFileSync(filePath, frontMatter);
+    console.log('File written successfully');
+    return updatedPost;
+  } catch (error) {
+    console.error('Error writing file:', error);
+    console.error('Error details:', {
+      postsDirectory,
+      filePath,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorCode: (error as any)?.code
+    });
+    return null;
+  }
 }
 
 // 글 삭제

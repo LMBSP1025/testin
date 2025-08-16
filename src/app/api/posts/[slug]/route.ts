@@ -8,9 +8,13 @@ export async function GET(
 ) {
   try {
     const { slug } = params;
+    console.log('GET /api/posts/[slug] called with slug:', slug);
+    
     const post = getPostBySlug(slug);
+    console.log('getPostBySlug result:', post ? 'found' : 'not found');
     
     if (!post) {
+      console.error('Post not found for slug:', slug);
       return NextResponse.json(
         { error: "포스트를 찾을 수 없습니다." },
         { status: 404 }
@@ -19,6 +23,7 @@ export async function GET(
 
     return NextResponse.json(post);
   } catch (error) {
+    console.error('GET /api/posts/[slug] error:', error);
     return NextResponse.json(
       { error: "포스트를 가져오는데 실패했습니다." },
       { status: 500 }
@@ -33,6 +38,10 @@ export async function PUT(
   try {
     const { postData, password } = await request.json();
     const { slug } = params;
+    
+    console.log('PUT /api/posts/[slug] called with slug:', slug);
+    console.log('postData:', postData ? 'provided' : 'missing');
+    console.log('password:', password ? 'provided' : 'missing');
 
     if (!postData || !password) {
       return NextResponse.json(
@@ -42,6 +51,7 @@ export async function PUT(
     }
 
     const post = updatePost(slug, postData as UpdatePostData, password);
+    console.log('updatePost result:', post ? 'success' : 'failed');
 
     if (post) {
       return NextResponse.json({ success: true, post });
@@ -52,6 +62,7 @@ export async function PUT(
       );
     }
   } catch (error) {
+    console.error('PUT /api/posts/[slug] error:', error);
     return NextResponse.json(
       { success: false, error: "포스트 수정에 실패했습니다." },
       { status: 500 }
