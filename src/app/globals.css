@@ -1,8 +1,104 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@layer base {
+    @font-face {
+        font-family: 'Unifont';
+        src: url('/assets/unifont-16.0.04.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+    }
+    html {
+        font-family: 'Unifont', system-ui, sans-serif !important;
+    }
+    body {
+        font-family: 'Unifont', system-ui, sans-serif !important;
+    }
+    * {
+        font-family: 'Unifont', system-ui, sans-serif !important;
+    }
+}
+
+@layer components {
+    .btn-glass {
+        @apply px-6 py-3 bg-white/20 text-white rounded-md transition-all duration-200 backdrop-blur-sm border border-white/30;
+    }
+    .btn-glass:hover {
+        @apply bg-white/30 border-white/50;
+    }
+    .glow-text {
+        @apply text-white;
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+    }
+    /* Select 요소 스타일링 */
+    select {
+        color: white !important;
+    }
+    select option {
+        color: black !important;
+        background-color: white !important;
+    }
+    select:focus option:checked {
+        background-color: #3b82f6 !important;
+        color: white !important;
+    }
+}
+
+@layer utilities {
+    .markdown-content {
+        @apply text-left;
+    }
+    .markdown-content h1 {
+        @apply text-3xl font-bold mb-6 text-black;
+    }
+    .markdown-content h2 {
+        @apply text-2xl font-semibold mb-4 text-black;
+    }
+    .markdown-content h3 {
+        @apply text-xl font-medium mb-3 text-black;
+    }
+    .markdown-content p {
+        @apply mb-4 text-black leading-relaxed;
+    }
+    .markdown-content img {
+        @apply max-w-full h-auto mx-auto my-6 shadow-lg;
+    }
+    .markdown-content a {
+        @apply text-blue-600 underline transition-colors;
+    }
+    .markdown-content a:hover {
+        @apply text-blue-800;
+    }
+    .markdown-content strong {
+        @apply font-bold text-black;
+    }
+    .markdown-content em {
+        @apply italic text-black;
+    }
+    .markdown-content ul,
+    .markdown-content ol {
+        @apply mb-4 pl-6 text-black;
+    }
+    .markdown-content li {
+        @apply mb-2;
+    }
+    .markdown-content blockquote {
+        @apply border-l-4 border-gray-400 pl-4 italic text-black my-4;
+    }
+    .markdown-content code {
+        @apply bg-gray-100 px-2 py-1 rounded text-sm font-mono text-black;
+    }
+    .markdown-content pre {
+        @apply bg-gray-100 p-4 rounded-lg overflow-x-auto my-4;
+    }
+    .markdown-content pre code {
+        @apply bg-transparent p-0;
+    }
+}
+
 .bg-mobile {
-    background-image: url('/mobile_bg.png');
+    background-image: url('/Msft_Nostalgia_Landscape-1536x864.jpg');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
@@ -13,7 +109,7 @@
 }
 
 body.bg-mobile {
-    background-image: url('/mobile_bg.png');
+    background-image: url('/Msft_Nostalgia_Landscape-1536x864.jpg');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
@@ -26,10 +122,85 @@ body {
 }
 
 .post-bg2 {
-    background-image: url('/mobile_bg2.png');
+    background-image: url('/Msft_Nostalgia_Landscape-1536x864.jpg');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed;
-    min-height: 100vh;
+}
+
+
+/* ---- Dreamcore theme additions ---- */
+
+:root {
+    --dream-pink: 255 200 255;
+    --dream-blue: 180 220 255;
+    --dream-peach: 255 220 200;
+    --glass-bg: 255 255 255;
+}
+
+
+/* Layered dreamy gradients on top of existing bg images */
+
+.dream-bg {
+    position: relative;
+}
+
+.dream-bg::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(60rem 40rem at 10% 0%, rgba(var(--dream-pink)/0.22), transparent 60%), radial-gradient(40rem 30rem at 90% 5%, rgba(var(--dream-blue)/0.20), transparent 55%), radial-gradient(60rem 60rem at 0% 100%, rgba(var(--dream-peach)/0.18), transparent 60%), radial-gradient(100rem 80rem at 50% 20%, rgba(255 255 255/0.10), transparent 60%);
+    z-index: -1;
+}
+
+
+/* Subtle film grain overlay */
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="120" height="120" filter="url(%23n)" opacity="0.04"/></svg>');
+    mix-blend-mode: soft-light;
+    z-index: 50;
+}
+
+
+/* Glass panel utility */
+
+.glass {
+    background: rgba(var(--glass-bg)/0.10);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255 255 255 / 0.25);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+
+/* Glow text */
+
+.glow-text {
+    text-shadow: 0 2px 10px rgba(255, 255, 255, 0.45), 0 0 30px rgba(var(--dream-blue)/0.35);
+}
+
+
+/* Floating animation for stickers/elements */
+
+@keyframes floatSlow {
+    0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-6px) translateX(4px) rotate(0.5deg);
+    }
+    100% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+    }
+}
+
+.float-slow {
+    animation: floatSlow 6s ease-in-out infinite;
 }

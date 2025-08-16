@@ -5,8 +5,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export default function PostDetailLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={cn(inter.className, "dark:text-slate-400", "post-bg2")}>{children}</body>
-    </html>
+    <div className={cn(inter.className, "dark:text-slate-200", "post-bg2", "dream-bg")}>
+      {children}
+    </div>
   );
 } 
