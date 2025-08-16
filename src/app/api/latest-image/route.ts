@@ -35,7 +35,8 @@ export async function GET() {
           url: imageUrl,
           alt: alt || '이미지',
           postTitle: latestPost.title,
-          postDate: latestPost.date
+          postDate: latestPost.date,
+          postSlug: latestPost.slug
         }
       });
     } else {

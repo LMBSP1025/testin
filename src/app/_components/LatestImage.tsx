@@ -7,6 +7,7 @@ interface LatestImageData {
   alt: string;
   postTitle: string;
   postDate: string;
+  postSlug: string;
 }
 
 export default function LatestImage() {
@@ -72,7 +73,7 @@ export default function LatestImage() {
 
   return (
     <div className="mx-auto cursor-pointer">
-      <a href={`/posts/${encodeURIComponent(imageData.postTitle.toLowerCase().replace(/\s+/g, '-'))}`}>
+      <a href={`/posts/${encodeURIComponent(imageData.postSlug)}`}>
         <div className="mb-4">
           <img 
             src={imageData.url} 

@@ -58,9 +58,25 @@ function generateSafeSlug(title: string): string {
     slug = 'post-' + Date.now();
   }
   
-  // 한글이 포함된 경우 원본 제목 유지 (파일명 일치를 위해)
+  // 한글이 포함된 경우에도 특수문자는 제거하고 안전한 파일명 생성
   if (/[가-힣]/.test(title)) {
-    slug = title.trim();
+    // 원본 제목에서 특수문자만 제거하고 한글과 영문, 숫자는 유지
+    slug = title
+      .trim()
+      .replace(/[^\w\s가-힣]/g, '') // 특수문자 제거
+      .replace(/\s+/g, '-') // 공백을 하이픈으로 변환
+      .replace(/-+/g, '-') // 연속된 하이픈을 하나로
+      .replace(/^-|-$/g, ''); // 앞뒤 하이픈 제거
+    
+    // 길이 제한 (50자)
+    if (slug.length > 50) {
+      slug = slug.substring(0, 50);
+    }
+    
+    // 빈 문자열이면 기본값 반환
+    if (!slug) {
+      slug = 'post-' + Date.now();
+    }
   }
   
   return slug;

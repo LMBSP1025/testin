@@ -172,27 +172,38 @@ export default function EditPost() {
     if (!imageFile) return null;
 
     const formData = new FormData();
-    formData.append('image', imageFile);
+    formData.append('file', imageFile);
     formData.append('description', imageDescription);
 
     try {
       setIsUploading(true);
       setUploadProgress(0);
 
+      console.log('Uploading image:', {
+        fileName: imageFile.name,
+        fileSize: imageFile.size,
+        fileType: imageFile.type
+      });
+
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
 
+      console.log('Upload response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('이미지 업로드에 실패했습니다.');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Upload failed with status:', response.status, 'Error:', errorData);
+        throw new Error(errorData.error || `이미지 업로드에 실패했습니다. (${response.status})`);
       }
 
       const data = await response.json();
+      console.log('Upload successful:', data);
       return data.url;
     } catch (error) {
       console.error('이미지 업로드 오류:', error);
-      setImageError('이미지 업로드에 실패했습니다.');
+      setImageError(error instanceof Error ? error.message : '이미지 업로드에 실패했습니다.');
       return null;
     } finally {
       setIsUploading(false);

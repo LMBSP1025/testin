@@ -8,7 +8,15 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get("file") as File;
 
+    console.log("Upload request received:", {
+      hasFile: !!file,
+      fileType: file?.type,
+      fileSize: file?.size,
+      fileName: file?.name
+    });
+
     if (!file) {
+      console.error("No file provided in request");
       return NextResponse.json(
         { error: "파일이 없습니다." },
         { status: 400 }
@@ -17,6 +25,7 @@ export async function POST(request: NextRequest) {
 
     // 파일 타입 검증
     if (!file.type.startsWith("image/")) {
+      console.error("Invalid file type:", file.type);
       return NextResponse.json(
         { error: "이미지 파일만 업로드 가능합니다." },
         { status: 400 }
@@ -25,6 +34,7 @@ export async function POST(request: NextRequest) {
 
     // 파일 크기 제한 (5MB)
     if (file.size > 5 * 1024 * 1024) {
+      console.error("File too large:", file.size);
       return NextResponse.json(
         { error: "파일 크기는 5MB 이하여야 합니다." },
         { status: 400 }
@@ -35,6 +45,7 @@ export async function POST(request: NextRequest) {
     const uploadDir = join(process.cwd(), "public", "uploads");
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
+      console.log("Created upload directory:", uploadDir);
     }
 
     // 고유한 파일명 생성
@@ -44,10 +55,14 @@ export async function POST(request: NextRequest) {
     const fileName = `${timestamp}-${randomString}.${extension}`;
     const filePath = join(uploadDir, fileName);
 
+    console.log("Saving file:", { fileName, filePath });
+
     // 파일 저장
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     await writeFile(filePath, buffer);
+
+    console.log("File saved successfully:", fileName);
 
     // 파일 URL 반환
     const fileUrl = `/uploads/${fileName}`;
