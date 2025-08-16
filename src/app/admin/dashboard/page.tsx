@@ -100,11 +100,10 @@ export default function AdminDashboard() {
           <h2 className="text-xl font-bold">관리자 대시보드</h2>
         </div>
         
-        <div className="p-8">
+        <div className="p-4">
           {/* 상단 타이틀과 버튼들 */}
           {/* 포스트 목록 */}
-          <div className="bg-gray-200 p-6 shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white]">
-            <h2 className="text-2xl font-light mb-6 text-black">포스트 목록</h2>
+          <div className="bg-gray-200 ">
             
             {posts.length === 0 ? (
               <div className="text-center text-gray-600 py-8">
@@ -115,24 +114,25 @@ export default function AdminDashboard() {
                 {posts.map((post) => (
                   <div
                     key={post.slug}
-                    className="flex gap-10 items-center justify-between bg-white p-4 shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white]"
+                    className="flex gap-8 items-center justify-between bg-white p-4 shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white]"
                   >
                     <div className="">
-                      <h3 className="text-lg font-medium text-black">{post.title}</h3>
+                      <h3 className="text-sm font-medium text-black">{post.title}</h3>
                       <div className="text-sm text-gray-600">
-                        카테고리: {post.category} | 작성일: {post.date}
+                        카테고리: {post.category} <br></br>
+                        작성일: {post.date}
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1 flex-col">
                       <button
                         onClick={() => handleEditPost(post.slug)}
-                        className="px-4 py-2 bg-gray-200 hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white,2px_2px_0_0_#000000] text-black font-medium transition-all duration-150"
+                        className="px-2 py-1 bg-gray-200 hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white,2px_2px_0_0_#000000] text-black font-medium transition-all duration-150 text-sm"
                       >
                         수정
                       </button>
                       <button
                         onClick={() => handleDeletePost(post.slug)}
-                        className="px-4 py-2 bg-gray-200 hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white,2px_2px_0_0_#000000] text-black font-medium transition-all duration-150"
+                        className="px-2 py-1 bg-gray-200 hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white,2px_2px_0_0_#000000] text-black font-medium transition-all duration-150 text-sm"
                       >
                         삭제
                       </button>
@@ -145,22 +145,22 @@ export default function AdminDashboard() {
 
           {/* 뒤로가기 링크 */}
             <hr className="w-full my-4 border-gray-400 border-1" />
-          <div className="flex gap-4">
+          <div className="flex gap-2">
               <button 
                 onClick={handleCreatePost} 
-                className="px-4 py-2 bg-gray-300 hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white,2px_2px_0_0_#000000] text-black font-medium transition-all duration-150"
+                className="px-2 py-1 bg-gray-300 hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white,2px_2px_0_0_#000000] text-black font-medium transition-all duration-150 text-sm"
               >
                 새 글 작성
               </button>
               <button 
                 onClick={handleLogout} 
-                className="px-4 py-2 bg-gray-300 hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white,2px_2px_0_0_#000000] text-black font-medium transition-all duration-150"
+                className="px-2 py-1 bg-gray-300 hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white,2px_2px_0_0_#000000] text-black font-medium transition-all duration-150 text-sm"
               >
                 로그아웃
               </button>
             <a 
               href="/category-select" 
-              className="inline-block px-4 py-2 bg-gray-300 hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white,2px_2px_0_0_#000000] text-black font-medium transition-all duration-150"
+              className="inline-block px-2 py-1 bg-gray-300 hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white,2px_2px_0_0_#000000] text-black font-medium transition-all duration-150 text-sm"
             >
               ← 메인으로 돌아가기
             </a>

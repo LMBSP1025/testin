@@ -285,7 +285,6 @@ export default function EditPost() {
         <div className="p-8">
           {/* 상단 타이틀과 버튼들 */}
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-4xl font-light tracking-tighter text-black">포스트 수정</h1>
             <a 
               href="/admin/dashboard" 
               className="px-6 py-3 bg-gray-300 hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white,2px_2px_0_0_#000000] text-black font-medium transition-all duration-150"

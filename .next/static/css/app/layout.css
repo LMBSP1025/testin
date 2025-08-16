@@ -774,6 +774,9 @@ select:focus option:checked {
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+.flex-row {
+  flex-direction: row;
+}
 .flex-col {
   flex-direction: column;
 }
@@ -797,6 +800,12 @@ select:focus option:checked {
 }
 .gap-6 {
   gap: 1.5rem;
+}
+.gap-1 {
+  gap: 0.25rem;
+}
+.gap-8 {
+  gap: 2rem;
 }
 .gap-y-20 {
   row-gap: 5rem;
@@ -944,6 +953,9 @@ select:focus option:checked {
 .p-8 {
   padding: 2rem;
 }
+.p-2 {
+  padding: 0.5rem;
+}
 .px-12 {
   padding-left: 3rem;
   padding-right: 3rem;
@@ -987,6 +999,18 @@ select:focus option:checked {
 .py-8 {
   padding-top: 2rem;
   padding-bottom: 2rem;
+}
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+.px-1 {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 .pb-16 {
   padding-bottom: 4rem;
