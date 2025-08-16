@@ -88,8 +88,17 @@ export function getPostSlugs() {
       return [];
     }
     const files = fs.readdirSync(postsDirectory);
+    console.log("getPostSlugs - Raw files:", files);
+    
     // .md 확장자 제거하고 slug 반환
-    return files.map(file => file.replace('.md', ''));
+    const slugs = files.map(file => {
+      let slug = file.replace('.md', '');
+      // 마침표로 끝나는 경우 제거
+      slug = slug.replace(/\.$/, '');
+      return slug;
+    });
+    console.log("getPostSlugs - Processed slugs:", slugs);
+    return slugs;
   } catch (error) {
     console.error("포스트 디렉토리 읽기 실패:", error);
     return [];
@@ -105,19 +114,30 @@ export function getPostBySlug(slug: string) {
     // URL 디코딩 처리
     const decodedSlug = decodeURIComponent(slug.replace(/\.md$/, ""));
     
+    console.log("getPostBySlug called with:", {
+      originalSlug: slug,
+      decodedSlug: decodedSlug,
+      postsDirectory: postsDirectory
+    });
+    
     // 먼저 정확한 파일명으로 시도
     let filePath = join(postsDirectory, `${decodedSlug}.md`);
     
     if (!fs.existsSync(filePath)) {
       // 정확한 파일명이 없으면 디렉토리 내 모든 파일을 검색
       const files = fs.readdirSync(postsDirectory);
+      console.log("Available files in posts directory:", files);
+      
       const matchingFile = files.find(file => {
         const fileName = file.replace('.md', '');
-        return fileName === decodedSlug || fileName === slug.replace(/\.md$/, "");
+        const matches = fileName === decodedSlug || fileName === slug.replace(/\.md$/, "");
+        console.log("Checking file:", { fileName, decodedSlug, matches });
+        return matches;
       });
       
       if (matchingFile) {
         filePath = join(postsDirectory, matchingFile);
+        console.log("Found matching file:", matchingFile);
       } else {
         console.error(`파일을 찾을 수 없습니다: ${decodedSlug}.md`);
         return null;
