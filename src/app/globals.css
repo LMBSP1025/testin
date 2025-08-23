@@ -43,6 +43,61 @@
         background-color: #3b82f6 !important;
         color: white !important;
     }
+    /* Range slider base black style */
+    input[type="range"].slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 120px;
+        height: 4px;
+        background: #000;
+        border-radius: 2px;
+        outline: none;
+    }
+    input[type="range"].slider::-webkit-slider-runnable-track {
+        height: 4px;
+        background: #000;
+        border-radius: 2px;
+    }
+    input[type="range"].slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #fff;
+        border: 1px solid #000;
+        margin-top: -4px;
+    }
+    input[type="range"].slider::-moz-range-track {
+        height: 4px;
+        background: #000;
+        border-radius: 2px;
+    }
+    input[type="range"].slider::-moz-range-thumb {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #fff;
+        border: 1px solid #000;
+    }
+    input[type="range"].slider::-ms-track {
+        height: 4px;
+        background: transparent;
+        border-color: transparent;
+        color: transparent;
+    }
+    input[type="range"].slider::-ms-fill-lower,
+    input[type="range"].slider::-ms-fill-upper {
+        background: #000;
+        border-radius: 2px;
+    }
+    input[type="range"].slider::-ms-thumb {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #fff;
+        border: 1px solid #000;
+    }
 }
 
 @layer utilities {
@@ -62,7 +117,7 @@
         @apply mb-4 text-black leading-relaxed;
     }
     .markdown-content img {
-        @apply max-w-full h-auto mx-auto my-6 shadow-lg;
+        @apply max-w-full h-auto mx-auto my-6;
     }
     .markdown-content a {
         @apply text-blue-600 underline transition-colors;
@@ -98,7 +153,7 @@
 }
 
 .bg-mobile {
-    background-image: url('/Msft_Nostalgia_Landscape-1536x864.jpg');
+    background-image: var(--dynamic-background);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
@@ -109,7 +164,7 @@
 }
 
 body.bg-mobile {
-    background-image: url('/Msft_Nostalgia_Landscape-1536x864.jpg');
+    background-image: var(--dynamic-background);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
@@ -123,7 +178,7 @@ body {
 }
 
 .post-bg2 {
-    background-image: url('/Msft_Nostalgia_Landscape-1536x864.jpg');
+    background-image: var(--dynamic-background);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
@@ -233,4 +288,48 @@ body::after {
 
 .float-slow {
     animation: floatSlow 6s ease-in-out infinite;
+}
+
+
+/* Volume slider styling */
+
+.slider {
+    -webkit-appearance: none;
+    width: 100px;
+    /* Adjust as needed */
+    height: 4px;
+    /* Track height */
+    background: #000000;
+    /* Black track */
+    outline: none;
+    opacity: 0.7;
+    transition: opacity .2s;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    /* Thumb width */
+    height: 12px;
+    /* Thumb height */
+    border-radius: 50%;
+    background: #ffffff;
+    /* White thumb */
+    cursor: pointer;
+    border: 1px solid #000000;
+    /* Black border for visibility */
+}
+
+.slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ffffff;
+    cursor: pointer;
+    border: 1px solid #000000;
 }

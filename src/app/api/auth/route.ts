@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const isValid = verifyPassword(password);
+    const isValid = await verifyPassword(password);
 
     if (isValid) {
       return NextResponse.json({ success: true });

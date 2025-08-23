@@ -27,10 +27,10 @@ export function PostPreview({
           {title}
         </Link>
       </h3>
-              <div className="text-lg mb-4">
-          <DateFormatter dateString={date} />
-        </div>
-        <p className="text-lg leading-relaxed mb-4">{excerpt}</p>
+      <div className="text-lg mb-4">
+        <DateFormatter dateString={date} />
+      </div>
+      <p className="text-lg leading-relaxed mb-4">{excerpt}</p>
     </div>
   );
 }

@@ -88,8 +88,8 @@ export default function AdminLogin() {
           {/* 뒤로가기 링크 */}
           <div className="text-center mt-8">
             <a 
-              href="/category-select" 
-              className="inline-block px-6 py-2 bg-gray-300 hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white,2px_2px_0_0_#000000] text-black font-medium transition-all duration-150"
+              href="/"
+              className="inline-block px-6 py-2 bg-gray-300 hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white,2px_2px_0_0_#000000] text-black font-medium"
             >
               ← 메인으로 돌아가기
             </a>

@@ -12,16 +12,18 @@ export default function CreatePost() {
     excerpt: "",
     category: "fiction",
     coverImage: "",
+    images: [], // 여러 이미지를 저장할 배열
     preview: false,
   });
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imageDescription, setImageDescription] = useState("");
+  const [imageFiles, setImageFiles] = useState<File[]>([]); // 여러 이미지 파일
+  const [imageDescriptions, setImageDescriptions] = useState<string[]>([]); // 여러 이미지 설명
+  const [imageWidths, setImageWidths] = useState<number[]>([]); // 여러 이미지 너비
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [imageError, setImageError] = useState("");
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadProgress, setUploadProgress] = useState<number[]>([]); // 여러 이미지 업로드 진행률
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const router = useRouter();
@@ -96,19 +98,19 @@ export default function CreatePost() {
       return;
     }
 
-    setImageFile(file);
+    setImageFiles((prev) => [...prev, file]);
+    setImageDescriptions((prev) => [...prev, ""]);
+    setImageWidths((prev) => [...prev, 100]); // 기본 너비 100%
+    setShowImagePreview(true);
     setImageError("");
-    setShowImagePreview(true);
-    
-    // 미리보기용 URL 생성
-    const previewUrl = URL.createObjectURL(file);
-    setShowImagePreview(true);
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileSelect(file);
+    const files = e.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        handleFileSelect(files[i]);
+      }
     }
   };
 
@@ -137,24 +139,28 @@ export default function CreatePost() {
     setDragActive(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFileSelect(e.dataTransfer.files[0]);
+      for (let i = 0; i < e.dataTransfer.files.length; i++) {
+        handleFileSelect(e.dataTransfer.files[i]);
+      }
     }
   };
 
-  const uploadImage = async (): Promise<string | null> => {
-    if (!imageFile) return null;
+  const uploadImage = async (): Promise<string[] | null> => {
+    if (!imageFiles.length) return null;
 
     setIsUploading(true);
-    setUploadProgress(0);
+    setUploadProgress(imageFiles.map(() => 0)); // 각 이미지별 진행률 초기화
     setImageError("");
 
     try {
       const formData = new FormData();
-      formData.append("file", imageFile);
+      for (const file of imageFiles) {
+        formData.append("files", file); // 여러 파일을 'files'로 전송
+      }
 
       // 업로드 진행률 시뮬레이션
       const progressInterval = setInterval(() => {
-        setUploadProgress(prev => Math.min(prev + 10, 90));
+        setUploadProgress(prev => prev.map(p => Math.min(p + 10, 90)));
       }, 100);
 
       const response = await fetch("/api/upload", {
@@ -163,37 +169,46 @@ export default function CreatePost() {
       });
 
       clearInterval(progressInterval);
-      setUploadProgress(100);
+      setUploadProgress(prev => prev.map(() => 100)); // 모든 이미지 업로드 완료
 
       if (response.ok) {
-        const { url } = await response.json();
-        return url;
+        const { urls } = await response.json();
+        return urls; // URL 배열 반환
       } else {
         const errorData = await response.json();
-        throw new Error(errorData.error || "업로드에 실패했습니다.");
+        setImageError(errorData.error || "이미지 업로드에 실패했습니다.");
+        return null;
       }
-    } catch (err) {
-      setImageError(err instanceof Error ? err.message : "업로드에 실패했습니다.");
+    } catch (error) {
+      setImageError("이미지 업로드 중 오류가 발생했습니다.");
       return null;
     } finally {
       setIsUploading(false);
-      setUploadProgress(0);
+      setUploadProgress([]); // 모든 이미지 업로드 진행률 초기화
     }
   };
 
   const insertImageAtCursor = async () => {
-    if (!imageFile || !contentRef.current) return;
+    if (!imageFiles.length || !contentRef.current) return;
 
-    const imageUrl = await uploadImage();
-    if (!imageUrl) return;
+    const imageUrls = await uploadImage();
+    if (!imageUrls || !Array.isArray(imageUrls)) return;
 
     const textarea = contentRef.current;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const description = imageDescription.trim() || "이미지";
     
-    const imageMarkdown = `![${description}](${imageUrl})`;
-    const newContent = formData.content.substring(0, start) + imageMarkdown + formData.content.substring(end);
+    let newContent = formData.content;
+    let cursorOffset = 0;
+
+    for (let i = 0; i < imageUrls.length; i++) {
+      const imageUrl = imageUrls[i];
+      const description = imageDescriptions[i]?.trim() || "이미지";
+      const width = imageWidths[i] || 100;
+      const imageMarkdown = `![${description}|${width}px](${imageUrl})`;
+      newContent = newContent.substring(0, start + cursorOffset) + imageMarkdown + newContent.substring(end + cursorOffset);
+      cursorOffset += imageMarkdown.length;
+    }
     
     setFormData(prev => ({
       ...prev,
@@ -201,22 +216,26 @@ export default function CreatePost() {
     }));
 
     // 이미지 입력 필드 초기화
-    setImageFile(null);
-    setImageDescription("");
+    setImageFiles([]);
+    setImageDescriptions([]);
+    setImageWidths([]); // 너비 초기화
     setShowImagePreview(false);
     setImageError("");
 
     // 포커스를 텍스트 영역으로 이동하고 커서 위치 조정
     setTimeout(() => {
-      textarea.focus();
-      const newCursorPos = start + imageMarkdown.length;
-      textarea.setSelectionRange(newCursorPos, newCursorPos);
+      if (textarea) {
+        textarea.focus();
+        const newCursorPos = start + cursorOffset;
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+      }
     }, 0);
   };
 
-  const removeSelectedImage = () => {
-    setImageFile(null);
-    setImageDescription("");
+  const removeSelectedImage = (index: number) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImageDescriptions(prev => prev.filter((_, i) => i !== index));
+    setImageWidths(prev => prev.filter((_, i) => i !== index)); // 너비도 제거
     setShowImagePreview(false);
     setImageError("");
     if (fileInputRef.current) {
@@ -313,12 +332,12 @@ export default function CreatePost() {
             </div>
 
             {/* 이미지 업로드 섹션 */}
-            <div className="p-4 bg-white/10 rounded-md border border-white/20">
-              <h3 className="text-lg font-medium text-black mb-3">🖼️ 이미지 업로드</h3>
+            <div className="p-6 bg-white/10 rounded-md border border-white/20">
+              <h3 className="text-lg font-medium text-black mb-4">🖼️ 이미지 업로드</h3>
               
               {/* 드래그 앤 드롭 영역 */}
               <div
-                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                   dragActive 
                     ? "border-blue-400 bg-blue-400/10" 
                     : "border-white/30 hover:border-white/50"
@@ -328,13 +347,13 @@ export default function CreatePost() {
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
               >
-                <div className="text-black/80 mb-2">
+                <div className="text-black/80 mb-3 text-base">
                   {dragActive ? "여기에 이미지를 놓으세요!" : "이미지를 드래그 앤 드롭하거나 클릭하여 선택하세요"}
                 </div>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 bg-white/20 hover:bg-white/30 text-black rounded-md transition-colors text-sm"
+                  className="px-6 py-3 bg-white/20 hover:bg-white/30 text-black rounded-md transition-colors text-base font-medium"
                 >
                   이미지 선택
                 </button>
@@ -342,50 +361,80 @@ export default function CreatePost() {
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
+                  multiple
                   onChange={handleFileInputChange}
                   className="hidden"
                 />
-                <div className="text-xs text-black/60 mt-2">
+                <div className="text-sm text-black/60 mt-3">
                   지원 형식: JPG, PNG, GIF, WebP (최대 5MB)
                 </div>
               </div>
 
               {/* 선택된 이미지 미리보기 */}
-              {showImagePreview && imageFile && (
-                <div className="mt-4 p-4 bg-white/5 rounded-md">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm text-black/80">선택된 이미지:</span>
+              {showImagePreview && imageFiles.length > 0 && (
+                <div className="mt-6 p-6 bg-white/5 rounded-md">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-base text-black/80 font-medium">선택된 이미지 ({imageFiles.length}개):</span>
                     <button
                       type="button"
-                      onClick={removeSelectedImage}
-                      className="text-red-400 hover:text-red-300 text-sm"
+                      onClick={() => setImageFiles([])}
+                      className="text-red-400 hover:text-red-300 text-sm px-3 py-1 rounded hover:bg-red-400/10"
                     >
-                      제거
+                      모두 제거
                     </button>
                   </div>
-                  <div className="max-w-xs mb-3">
-                    <img 
-                      src={URL.createObjectURL(imageFile)} 
-                      alt="이미지 미리보기"
-                      className="w-full h-auto rounded-md border border-white/30"
-                    />
-                  </div>
-                  <div className="text-xs text-black/60 mb-2">
-                    파일명: {imageFile.name} ({(imageFile.size / 1024 / 1024).toFixed(2)}MB)
-                  </div>
-                  
-                  <div className="mb-3">
-                    <label htmlFor="imageDescription" className="block text-sm font-medium text-black mb-2">
-                      이미지 설명
-                    </label>
-                    <input
-                      type="text"
-                      id="imageDescription"
-                      value={imageDescription}
-                      onChange={(e) => setImageDescription(e.target.value)}
-                      className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-md text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
-                      placeholder="이미지에 대한 설명 (선택사항)"
-                    />
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
+                    {imageFiles.map((file, index) => (
+                      <div key={index} className="flex items-start space-x-4 p-3 bg-white/5 rounded-lg border border-white/10">
+                        <img 
+                          src={URL.createObjectURL(file)} 
+                          alt={`이미지 미리보기 ${index + 1}`}
+                          className="w-24 h-24 object-cover rounded-md border border-white/30 flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm text-black/70 mb-2 font-medium">
+                            파일명: {file.name}
+                          </div>
+                          <div className="text-xs text-black/50 mb-2">
+                            ({(file.size / 1024 / 1024).toFixed(2)}MB)
+                          </div>
+                          <input
+                            type="text"
+                            value={imageDescriptions[index] || ""}
+                            onChange={(e) => {
+                              const newDescriptions = [...imageDescriptions];
+                              newDescriptions[index] = e.target.value;
+                              setImageDescriptions(newDescriptions);
+                            }}
+                            className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-md text-black text-sm mb-3"
+                            placeholder="이미지에 대한 설명 (선택사항)"
+                          />
+                          <div className="flex items-center space-x-3">
+                            <label className="text-sm text-black/70 font-medium">너비:</label>
+                            <input
+                              type="number"
+                              min="50"
+                              max="800"
+                              value={imageWidths[index] || 100}
+                              onChange={(e) => {
+                                const newWidths = [...imageWidths];
+                                newWidths[index] = Number(e.target.value);
+                                setImageWidths(newWidths);
+                              }}
+                              className="w-20 px-2 py-1 bg-white/20 border border-white/30 rounded-md text-black text-sm text-center"
+                            />
+                            <span className="text-sm text-black/70">px</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeSelectedImage(index)}
+                          className="text-red-400 hover:text-red-300 text-sm px-2 py-1 rounded hover:bg-red-400/10 flex-shrink-0"
+                        >
+                          제거
+                        </button>
+                      </div>
+                    ))}
                   </div>
 
                   {imageError && (
@@ -396,12 +445,12 @@ export default function CreatePost() {
                     <div className="mb-3">
                       <div className="flex justify-between text-sm text-black/80 mb-1">
                         <span>업로드 중...</span>
-                        <span>{uploadProgress}%</span>
+                        <span>{uploadProgress.reduce((sum, p) => sum + p, 0) / uploadProgress.length}%</span>
                       </div>
                       <div className="w-full bg-white/20 rounded-full h-2">
                         <div 
                           className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${uploadProgress}%` }}
+                          style={{ width: `${uploadProgress.reduce((sum, p) => sum + p, 0) / uploadProgress.length}%` }}
                         ></div>
                       </div>
                     </div>
@@ -419,7 +468,9 @@ export default function CreatePost() {
               )}
               
               <div className="text-xs text-black/60 mt-3">
-                💡 이미지를 삽입하려면: 1) 이미지 파일 선택 2) 설명 입력 (선택사항) 3) 삽입 버튼 클릭
+                💡 이미지를 삽입하려면: 1) 이미지 파일 선택 2) 설명 입력 (선택사항) 3) 너비 설정 (선택사항) 4) 삽입 버튼 클릭
+                <br />
+                📏 너비는 20px~2000px 사이에서 설정 가능하며, 설정하지 않으면 기본값 100px가 적용됩니다.
               </div>
             </div>
 
@@ -433,9 +484,14 @@ export default function CreatePost() {
                   <div>**굵게** → <strong>굵게</strong></div>
                   <div>*기울임* → <em>기울임</em></div>
                   <div>![설명](이미지URL) → 이미지 삽입</div>
+                  <div>![설명|너비px](이미지URL) → 크기 조정된 이미지</div>
                   <div>[링크텍스트](URL) → 링크</div>
                   <div># 제목 → 큰 제목</div>
                   <div>## 소제목 → 작은 제목</div>
+                </div>
+                <div className="text-xs text-black/60 mt-2 pt-2 border-t border-white/20">
+                  🖼️ <strong>이미지 크기 조정:</strong> 이미지 업로드 시 너비를 20px~2000px 사이에서 설정하면<br/>
+                  자동으로 `![설명|너비px](URL)` 형식으로 마크다운에 삽입됩니다.
                 </div>
               </div>
               <textarea

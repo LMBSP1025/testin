@@ -4,13 +4,13 @@ import markdownToHtml from "@/lib/markdownToHtml";
 
 export default async function Page({ params, searchParams }: { params: { slug: string }, searchParams?: any }) {
   const { slug } = params;
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     notFound();
   }
 
-  const content = await markdownToHtml(post?.content || "");
+  const content = await markdownToHtml(post.content || "");
 
   return (
     <main className="bg-white p-8 pb-16">
@@ -23,9 +23,19 @@ export default async function Page({ params, searchParams }: { params: { slug: s
         </a>
       </div>
       
+      {/* 뒤로가기 버튼 */}
+      <div className="text-center mb-4">
+        <a 
+          href="javascript:history.back()" 
+          className=""
+        >
+          ← 뒤로가기
+        </a>
+      </div>
+      
       {/* 제목 */}
       <h2 className="text-3xl font-normal text-center mb-8 text-black">
-        {post?.title}
+        {post.title}
       </h2>
       
       {/* 본문 */}
