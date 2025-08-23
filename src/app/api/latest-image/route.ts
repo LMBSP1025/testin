@@ -4,7 +4,7 @@ import { getAllPosts } from '@/lib/api';
 export async function GET() {
   try {
     // 모든 포스트를 가져와서 날짜순으로 정렬
-    const posts = getAllPosts();
+    const posts = await getAllPosts();
     
     if (posts.length === 0) {
       return NextResponse.json({ 
