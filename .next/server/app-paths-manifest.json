@@ -1,14 +1,5 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/page": "app/page.js",
-  "/admin/dashboard/page": "app/admin/dashboard/page.js",
-  "/admin/background/page": "app/admin/background/page.js",
-  "/admin/edit/[slug]/page": "app/admin/edit/[slug]/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/api/auth/route": "app/api/auth/route.js",
-  "/api/posts/route": "app/api/posts/route.js",
   "/api/playlist/global/route": "app/api/playlist/global/route.js",
-  "/api/main-banner/route": "app/api/main-banner/route.js",
-  "/api/posts/[slug]/route": "app/api/posts/[slug]/route.js",
-  "/api/upload/route": "app/api/upload/route.js"
+  "/page": "app/page.js"
 }

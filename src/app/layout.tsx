@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import cn from "classnames";
 import { readFileSync } from "fs";
 import { join } from "path";
+import GlobalMusicFooter from "./_components/GlobalMusicFooter";
 
 import "./globals.css";
 
@@ -54,6 +55,8 @@ export default function RootLayout({
           {children}
         </div>
         
+        {/* 전역 음악 플레이어 */}
+        <GlobalMusicFooter />
       </body>
     </html>
   );
