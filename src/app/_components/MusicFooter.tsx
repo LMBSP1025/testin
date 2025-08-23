@@ -294,6 +294,14 @@ export default function MusicFooter({ playlistId, playlistTitle }: MusicFooterPr
           const newCurrentTime = playerRef.current.getCurrentTime();
           setCurrentTime(newCurrentTime);
           
+          // 현재 곡의 duration 업데이트
+          if (typeof playerRef.current.getDuration === "function") {
+            const currentDuration = playerRef.current.getDuration();
+            if (currentDuration && currentDuration !== duration) {
+              setDuration(currentDuration);
+            }
+          }
+          
           // 현재 플레이리스트 인덱스 가져오기
           const playlistIndex = playerRef.current.getPlaylistIndex ? playerRef.current.getPlaylistIndex() : 0;
           setCurrentVideoIndex(playlistIndex);
@@ -342,6 +350,14 @@ export default function MusicFooter({ playlistId, playlistTitle }: MusicFooterPr
         startTimeRef.current = Date.now();
         isFirstPlayRef.current = false;
       }
+      
+      // 새로운 곡이 재생될 때 duration 업데이트
+      if (playerRef.current && typeof playerRef.current.getDuration === "function") {
+        const currentDuration = playerRef.current.getDuration();
+        if (currentDuration && currentDuration !== duration) {
+          setDuration(currentDuration);
+        }
+      }
     } else if (event.data === (window as any).YT.PlayerState.PAUSED) {
       setIsPlaying(false);
     } else if (event.data === (window as any).YT.PlayerState.ENDED) {
@@ -355,10 +371,20 @@ export default function MusicFooter({ playlistId, playlistTitle }: MusicFooterPr
         }, 100);
       }
     } else if (event.data === (window as any).YT.PlayerState.CUED) {
-      // 새로운 곡이 로드되었을 때 startTimeRef 업데이트
+      // 새로운 곡이 로드되었을 때 duration과 startTimeRef 업데이트
       if (startTimeRef.current > 0) {
         startTimeRef.current = Date.now();
       }
+      
+      // 새로운 곡이 로드될 때 duration 업데이트
+      setTimeout(() => {
+        if (playerRef.current && typeof playerRef.current.getDuration === "function") {
+          const currentDuration = playerRef.current.getDuration();
+          if (currentDuration && currentDuration > 0) {
+            setDuration(currentDuration);
+          }
+        }
+      }, 500); // 곡 로드 완료 후 duration 가져오기
     }
   };
 
@@ -420,24 +446,40 @@ export default function MusicFooter({ playlistId, playlistTitle }: MusicFooterPr
   const prevVideo = () => {
     if (playerRef.current && typeof playerRef.current.previousVideo === "function") {
       playerRef.current.previousVideo();
-      // 이전 곡으로 이동 시 startTimeRef 재설정
+      // 이전 곡으로 이동 시 startTimeRef 재설정 및 duration 업데이트
       setTimeout(() => {
         if (startTimeRef.current > 0) {
           startTimeRef.current = Date.now();
         }
-      }, 200);
+        
+        // 새로운 곡의 duration 업데이트
+        if (playerRef.current && typeof playerRef.current.getDuration === "function") {
+          const currentDuration = playerRef.current.getDuration();
+          if (currentDuration && currentDuration > 0) {
+            setDuration(currentDuration);
+          }
+        }
+      }, 500);
     }
   };
 
   const nextVideo = () => {
     if (playerRef.current && typeof playerRef.current.nextVideo === "function") {
       playerRef.current.nextVideo();
-      // 다음 곡으로 이동 시 startTimeRef 재설정
+      // 다음 곡으로 이동 시 startTimeRef 재설정 및 duration 업데이트
       setTimeout(() => {
         if (startTimeRef.current > 0) {
           startTimeRef.current = Date.now();
         }
-      }, 200);
+        
+        // 새로운 곡의 duration 업데이트
+        if (playerRef.current && typeof playerRef.current.getDuration === "function") {
+          const currentDuration = playerRef.current.getDuration();
+          if (currentDuration && currentDuration > 0) {
+            setDuration(currentDuration);
+          }
+        }
+      }, 500);
     }
   };
 
@@ -472,7 +514,10 @@ export default function MusicFooter({ playlistId, playlistTitle }: MusicFooterPr
       >
         <div
           className="absolute h-full bg-black"
-          style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%`, zIndex: 100 }}
+          style={{ 
+            width: `${duration && duration > 0 ? Math.min(100, Math.max(0, (currentTime / duration) * 100)) : 0}%`, 
+            zIndex: 100 
+          }}
         />
       </div>
       <div className="w-full px-5 py-3">

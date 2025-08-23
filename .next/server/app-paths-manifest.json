@@ -1,25 +1,3 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/admin/dashboard/page": "app/admin/dashboard/page.js",
-  "/admin/background/page": "app/admin/background/page.js",
-  "/admin/edit/[slug]/page": "app/admin/edit/[slug]/page.js",
-  "/api/auth/change/route": "app/api/auth/change/route.js",
-  "/api/background/route": "app/api/background/route.js",
-  "/api/latest-image/route": "app/api/latest-image/route.js",
-  "/api/auth/route": "app/api/auth/route.js",
-  "/api/gist-debug/route": "app/api/gist-debug/route.js",
-  "/api/main-banner/route": "app/api/main-banner/route.js",
-  "/api/playlist/global/route": "app/api/playlist/global/route.js",
-  "/admin/page": "app/admin/page.js",
-  "/api/posts/route": "app/api/posts/route.js",
-  "/api/posts/[slug]/route": "app/api/posts/[slug]/route.js",
-  "/admin/create/page": "app/admin/create/page.js",
-  "/category-select/page": "app/category-select/page.js",
-  "/api/upload/route": "app/api/upload/route.js",
-  "/etc/page": "app/etc/page.js",
-  "/drawing/page": "app/drawing/page.js",
-  "/banner/page": "app/banner/page.js",
-  "/page": "app/page.js",
-  "/writing/page": "app/writing/page.js",
-  "/posts/[slug]/page": "app/posts/[slug]/page.js"
+  "/page": "app/page.js"
 }
