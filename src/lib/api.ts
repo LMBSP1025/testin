@@ -160,11 +160,28 @@ export function getCurrentDate(): string {
   console.log('getCurrentDate - Raw UTC time:', now.toISOString());
   console.log('getCurrentDate - Raw UTC time object:', now);
   
-  // UTC 시간을 그대로 반환 (9시간 더하지 않음)
-  const isoString = now.toISOString();
-  console.log('getCurrentDate - Returning UTC ISO string:', isoString);
+  // 한국 시간대(UTC+9)로 변환
+  const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
   
-  return isoString;
+  const year = koreaTime.getUTCFullYear();
+  const month = String(koreaTime.getUTCMonth() + 1).padStart(2, '0');
+  const day = koreaTime.getUTCDate();
+  const hours = koreaTime.getUTCHours();
+  const minutes = koreaTime.getUTCMinutes();
+  const seconds = koreaTime.getUTCSeconds();
+  
+  // 한국 시간 형식으로 반환 (YYYY-MM-DDTHH:mm:ss.sss+09:00)
+  const koreaTimeString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.000+09:00`;
+  
+  console.log('getCurrentDate called:', {
+    originalTime: now.toISOString(),
+    koreaTime: koreaTime.toISOString(),
+    koreaTimeString: koreaTimeString,
+    hours: hours,
+    minutes: minutes
+  });
+  
+  return koreaTimeString;
 }
 
 // 날짜 형식 검증
