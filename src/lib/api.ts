@@ -163,13 +163,23 @@ export function getCurrentDate(): string {
   
   const year = koreaTime.getUTCFullYear();
   const month = String(koreaTime.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(koreaTime.getUTCDate()).padStart(2, '0');
-  const hours = String(koreaTime.getUTCHours()).padStart(2, '0');
-  const minutes = String(koreaTime.getUTCMinutes()).padStart(2, '0');
-  const seconds = String(koreaTime.getUTCSeconds()).padStart(2, '0');
+  const day = koreaTime.getUTCDate();
+  const hours = koreaTime.getUTCHours();
+  const minutes = koreaTime.getUTCMinutes();
+  const seconds = koreaTime.getUTCSeconds();
   
   // 한국 시간 형식으로 반환 (YYYY-MM-DDTHH:mm:ss.sss+09:00)
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000+09:00`;
+  const koreaTimeString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.000+09:00`;
+  
+  console.log('getCurrentDate called:', {
+    originalTime: now.toISOString(),
+    koreaTime: koreaTime.toISOString(),
+    koreaTimeString: koreaTimeString,
+    hours: hours,
+    minutes: minutes
+  });
+  
+  return koreaTimeString;
 }
 
 // 날짜 형식 검증
