@@ -30,8 +30,18 @@ export default async function Writing({ searchParams }: { searchParams?: { page?
       title: post.title,
       slug: post.slug,
       category: post.category,
-      date: post.date
+      date: post.date,
+      linkUrl: `/posts/${post.slug}`,
+      originalIndex: startIndex + index
     });
+  });
+
+  // 전체 포스트 배열에서 현재 페이지 포스트들의 위치 확인
+  console.log('Posts array indices for current page:', {
+    startIndex,
+    endIndex,
+    totalPosts: posts.length,
+    currentPostsIndices: currentPosts.map((_, index) => startIndex + index)
   });
 
   return (
@@ -56,6 +66,14 @@ export default async function Writing({ searchParams }: { searchParams?: { page?
               <Link
                 key={post.slug}
                 href={`/posts/${post.slug}`}
+                onClick={() => {
+                  console.log('Post card clicked:', {
+                    title: post.title,
+                    slug: post.slug,
+                    linkUrl: `/posts/${post.slug}`,
+                    postId: post.id
+                  });
+                }}
                 className="block bg-gray-200 px-4 py-3 shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white] hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] transition-all duration-150"
               >
                 <div className="text-lg font-medium mb-1 text-black">{post.title}</div>

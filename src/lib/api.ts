@@ -155,7 +155,7 @@ function generateId(): string {
 }
 
 // 현재 날짜 문자열 생성
-function getCurrentDate(): string {
+export function getCurrentDate(): string {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -169,15 +169,21 @@ function getCurrentDate(): string {
 }
 
 // 날짜 형식 검증
-function isValidDate(dateString: string): boolean {
+export function isValidDate(dateString: string): boolean {
   if (!dateString || typeof dateString !== 'string') return false;
   
   const date = new Date(dateString);
-  return !isNaN(date.getTime()) && dateString.match(/^\d{4}-\d{2}-\d{2}$/) !== null;
+  if (isNaN(date.getTime())) return false;
+  
+  // ISO 형식 (YYYY-MM-DDTHH:mm:ss.sssZ) 또는 일반 날짜 형식 (YYYY-MM-DD) 모두 허용
+  const isoPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+  const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+  
+  return isoPattern.test(dateString) || datePattern.test(dateString);
 }
 
 // 안전한 날짜 문자열 생성 (기존 날짜가 유효하지 않으면 현재 날짜 사용)
-function getSafeDate(existingDate?: string): string {
+export function getSafeDate(existingDate?: string): string {
   if (existingDate && isValidDate(existingDate)) {
     return existingDate;
   }
@@ -185,7 +191,7 @@ function getSafeDate(existingDate?: string): string {
 }
 
 // 안전한 slug 생성 함수
-function generateSafeSlug(title: string): string {
+export function generateSafeSlug(title: string): string {
   if (!title || typeof title !== 'string') {
     console.warn('Invalid title for slug generation:', title);
     return 'post-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
@@ -258,37 +264,47 @@ export async function getPostBySlug(slug: string) {
       console.log('Vercel environment with Gist, searching in Gist');
       console.log('Looking for slug:', slug);
       const posts = await getPostsFromGist();
-      console.log('All posts from Gist:', posts.map(p => ({ title: p.title, slug: p.slug })));
+      console.log('All posts from Gist:', posts.map(p => ({ title: p.title, slug: p.slug, id: p.id })));
       
-      // 여러 가지 slug 변형으로 검색 시도
-      const slugVariations = [
-        slug, // 원본 slug
-        decodeURIComponent(slug), // URL 디코딩된 slug
-        encodeURIComponent(slug), // URL 인코딩된 slug
-        slug.replace(/\.md$/, ''), // .md 제거
-        decodeURIComponent(slug).replace(/\.md$/, ''), // 디코딩 후 .md 제거
-      ];
+      // 정확한 slug 매칭을 먼저 시도
+      const exactMatch = posts.find(p => p.slug === slug);
+      if (exactMatch) {
+        console.log('Found exact slug match:', slug);
+        return exactMatch;
+      }
       
-      console.log('Trying slug variations:', slugVariations);
-      
-      for (const variation of slugVariations) {
-        const foundPost = posts.find(p => p.slug === variation);
-        if (foundPost) {
-          console.log('Found post with variation:', variation);
-          return foundPost;
+      // URL 디코딩된 slug로 검색
+      const decodedSlug = decodeURIComponent(slug);
+      if (decodedSlug !== slug) {
+        const decodedMatch = posts.find(p => p.slug === decodedSlug);
+        if (decodedMatch) {
+          console.log('Found decoded slug match:', decodedSlug);
+          return decodedMatch;
         }
       }
       
-      // 한글 제목을 안전한 slug로 변환해서도 시도
-      const safeSlug = generateSafeSlug(decodeURIComponent(slug));
-      console.log('Trying with safe slug:', safeSlug);
-      const safePost = posts.find(p => p.slug === safeSlug);
-      if (safePost) {
-        console.log('Found post with safe slug:', safeSlug);
-        return safePost;
+      // .md 확장자 제거 후 검색
+      const slugWithoutMd = slug.replace(/\.md$/, '');
+      if (slugWithoutMd !== slug) {
+        const mdMatch = posts.find(p => p.slug === slugWithoutMd);
+        if (mdMatch) {
+          console.log('Found slug without .md match:', slugWithoutMd);
+          return mdMatch;
+        }
+      }
+      
+      // 디코딩 후 .md 제거한 slug로 검색
+      const decodedWithoutMd = decodeURIComponent(slug).replace(/\.md$/, '');
+      if (decodedWithoutMd !== slugWithoutMd) {
+        const decodedMdMatch = posts.find(p => p.slug === decodedWithoutMd);
+        if (decodedMdMatch) {
+          console.log('Found decoded slug without .md match:', decodedWithoutMd);
+          return decodedMdMatch;
+        }
       }
       
       console.log('No post found with any slug variation');
+      console.log('Available slugs:', posts.map(p => p.slug));
       return null;
     }
 
@@ -365,11 +381,21 @@ export async function getAllPosts(): Promise<Post[]> {
     const posts = await getPostsFromGist();
     
     // 날짜를 Date 객체로 변환하여 정확한 정렬
-    return posts.sort((post1, post2) => {
+    const sortedPosts = posts.sort((post1, post2) => {
       const date1 = new Date(post1.date || 0);
       const date2 = new Date(post2.date || 0);
       return date2.getTime() - date1.getTime(); // 최신 날짜가 먼저 오도록
     });
+    
+    console.log('Posts after sorting in getAllPosts:', sortedPosts.map((post, index) => ({
+      index,
+      title: post.title,
+      slug: post.slug,
+      date: post.date,
+      id: post.id
+    })));
+    
+    return sortedPosts;
   }
 
   // Vercel 환경이지만 Gist 설정이 없으면 빈 배열
@@ -384,13 +410,23 @@ export async function getAllPosts(): Promise<Post[]> {
     slugs.map(async (slug) => await getPostBySlug(slug))
   );
   
-  return posts
+  const filteredAndSortedPosts = posts
     .filter((post): post is NonNullable<typeof post> => post !== null)
     .sort((post1, post2) => {
       const date1 = new Date(post1.date || 0);
       const date2 = new Date(post2.date || 0);
       return date2.getTime() - date1.getTime(); // 최신 날짜가 먼저 오도록
     });
+  
+  console.log('Posts after sorting in getAllPosts (local):', filteredAndSortedPosts.map((post, index) => ({
+    index,
+    title: post.title,
+    slug: post.slug,
+    date: post.date,
+    id: post.id
+  })));
+  
+  return filteredAndSortedPosts;
 }
 
 export function getPostsByCategory(category: string): Promise<Post[]> {
@@ -404,7 +440,9 @@ export function getPostsByCategory(category: string): Promise<Post[]> {
         title: post.title,
         slug: post.slug,
         category: post.category,
-        date: post.date
+        date: post.date,
+        id: post.id,
+        arrayIndex: index
       });
     });
     
@@ -422,7 +460,10 @@ export function getPostsByCategory(category: string): Promise<Post[]> {
         title: post.title,
         slug: post.slug,
         category: post.category,
-        date: post.date
+        date: post.date,
+        id: post.id,
+        originalArrayIndex: posts.findIndex(p => p.id === post.id),
+        filteredArrayIndex: index
       });
     });
     
@@ -542,6 +583,7 @@ export async function updatePost(slug: string, postData: UpdatePostData, passwor
     images: postData.images || existingPost.images || [], // images 필드 처리
     content: postData.content || existingPost.content, // content 필드가 없으면 기존 내용 유지
     category: postData.category || existingPost.category || "fiction", // 카테고리 기본값 설정
+    date: getCurrentDate(), // 수정 시 현재 시간으로 업데이트
     updatedAt: getCurrentDate(),
   };
 
@@ -575,7 +617,7 @@ export async function updatePost(slug: string, postData: UpdatePostData, passwor
   const validatedPost = {
     id: updatedPost.id || `post-${Date.now()}`,
     title: updatedPost.title || "Untitled",
-    date: updatedPost.date || getCurrentDate(),
+    date: getCurrentDate(), // 수정 시 항상 현재 시간 사용
     excerpt: updatedPost.excerpt || "",
     category: updatedPost.category || "fiction",
     coverImage: updatedPost.coverImage || "",

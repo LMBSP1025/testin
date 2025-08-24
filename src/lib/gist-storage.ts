@@ -1,4 +1,5 @@
 import { Post, CreatePostData, UpdatePostData } from "@/interfaces/post";
+import { getCurrentDate, generateSafeSlug } from "./api";
 
 // GitHub Gist를 데이터베이스로 사용
 const GIST_ID = process.env.GITHUB_GIST_ID || '';
@@ -237,15 +238,6 @@ export async function saveAdminConfigToGist(config: AdminConfig): Promise<boolea
   }
 }
 
-// 현재 날짜 문자열 생성 (api.ts와 동일한 형식)
-function getCurrentDate(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
 // 포스트 생성
 export async function createPostInGist(postData: CreatePostData): Promise<Post | null> {
   console.log('=== createPostInGist START ===');
@@ -321,6 +313,7 @@ export async function updatePostInGist(slug: string, postData: UpdatePostData): 
       preview: Boolean(postData.preview ?? posts[index].preview),
       playlistId: postData.playlistId || posts[index].playlistId || "",
       playlistTitle: postData.playlistTitle || posts[index].playlistTitle || "",
+      date: currentDate, // 수정 시 현재 시간으로 업데이트
       updatedAt: currentDate,
     };
 
@@ -472,48 +465,4 @@ export async function deletePostInGist(slug: string): Promise<boolean> {
   const success = await savePostsToGist(filteredPosts);
   console.log('Delete operation success:', success);
   return success;
-}
-
-// 안전한 slug 생성
-function generateSafeSlug(title: string): string {
-  let slug = title
-    .trim()
-    .replace(/[^\w\s가-힣]/g, '') // 특수문자 제거 (한글, 영문, 숫자, 언더스코어만 허용)
-    .replace(/\s+/g, '-') // 공백을 하이픈으로 변환
-    .replace(/-+/g, '-') // 연속된 하이픈을 하나로
-    .replace(/^-|-$/g, ''); // 앞뒤 하이픈 제거
-  
-  // 길이 제한 (50자)
-  if (slug.length > 50) {
-    slug = slug.substring(0, 50);
-  }
-  
-  // 빈 문자열이면 기본값 반환
-  if (!slug) {
-    slug = 'post-' + Date.now();
-  }
-  
-  // 한글이 포함된 경우 영문/숫자로만 구성된 slug 생성
-  if (/[가-힣]/.test(slug)) {
-    slug = title
-      .trim()
-      .replace(/[^\w\s]/g, '') // 한글 제거, 영문/숫자/공백만 유지
-      .replace(/\s+/g, '-') // 공백을 하이픈으로 변환
-      .replace(/-+/g, '-') // 연속된 하이픈을 하나로
-      .replace(/^-|-$/g, '') // 앞뒤 하이픈 제거
-      .toLowerCase(); // 소문자로 변환
-    
-    // 길이 제한 (50자)
-    if (slug.length > 50) {
-      slug = slug.substring(0, 50);
-    }
-    
-    // 빈 문자열이면 기본값 반환
-    if (!slug) {
-      slug = 'post-' + Date.now();
-    }
-  }
-  
-  console.log('Generated slug:', { title, slug });
-  return slug;
 }
