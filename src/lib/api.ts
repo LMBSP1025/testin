@@ -157,15 +157,19 @@ function generateId(): string {
 // 현재 날짜 문자열 생성
 export function getCurrentDate(): string {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
   
-  // ISO 형식으로 반환 (YYYY-MM-DDTHH:mm:ss.sssZ)
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000Z`;
+  // 한국 시간대(UTC+9)로 변환
+  const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  
+  const year = koreaTime.getUTCFullYear();
+  const month = String(koreaTime.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(koreaTime.getUTCDate()).padStart(2, '0');
+  const hours = String(koreaTime.getUTCHours()).padStart(2, '0');
+  const minutes = String(koreaTime.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(koreaTime.getUTCSeconds()).padStart(2, '0');
+  
+  // 한국 시간 형식으로 반환 (YYYY-MM-DDTHH:mm:ss.sss+09:00)
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000+09:00`;
 }
 
 // 날짜 형식 검증
@@ -175,11 +179,12 @@ export function isValidDate(dateString: string): boolean {
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return false;
   
-  // ISO 형식 (YYYY-MM-DDTHH:mm:ss.sssZ) 또는 일반 날짜 형식 (YYYY-MM-DD) 모두 허용
+  // ISO 형식 (YYYY-MM-DDTHH:mm:ss.sssZ), 한국 시간 형식 (+09:00), 또는 일반 날짜 형식 (YYYY-MM-DD) 모두 허용
   const isoPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+  const koreaTimePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+09:00/;
   const datePattern = /^\d{4}-\d{2}-\d{2}$/;
   
-  return isoPattern.test(dateString) || datePattern.test(dateString);
+  return isoPattern.test(dateString) || koreaTimePattern.test(dateString) || datePattern.test(dateString);
 }
 
 // 안전한 날짜 문자열 생성 (기존 날짜가 유효하지 않으면 현재 날짜 사용)

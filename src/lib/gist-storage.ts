@@ -249,9 +249,32 @@ export async function createPostInGist(postData: CreatePostData): Promise<Post |
     
     const currentDate = getCurrentDate();
     
+    // 기존 포스트들의 slug 목록 확인
+    const existingSlugs = posts.map(p => p.slug);
+    console.log('Existing slugs:', existingSlugs);
+    
+    // 고유한 slug 생성 (중복 방지)
+    let slug = generateSafeSlug(postData.title);
+    let counter = 1;
+    
+    // slug가 중복되면 숫자를 추가하여 고유하게 만듦
+    while (existingSlugs.includes(slug)) {
+      console.log(`Slug "${slug}" already exists, trying with counter: ${counter}`);
+      slug = `${generateSafeSlug(postData.title)}-${counter}`;
+      counter++;
+      
+      // 무한 루프 방지
+      if (counter > 100) {
+        slug = `post-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        break;
+      }
+    }
+    
+    console.log('Final generated slug:', slug);
+    
     const newPost: Post = {
       id: Date.now().toString(),
-      slug: generateSafeSlug(postData.title),
+      slug: slug,
       title: postData.title || "Untitled",
       date: currentDate,
       coverImage: "",

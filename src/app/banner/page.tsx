@@ -17,7 +17,7 @@ export default async function Banner({ searchParams }: { searchParams?: { page?:
   return (
     <main className="relative flex flex-col items-center justify-center min-h-screen py-12">
       {/* 윈도우 98 스타일 창 */}
-      <div className="max-w-4xl mx-auto shadow-[2px_2px_0_0_#000000] bg-gray-300">
+      <div className="max-w-xl w-full mx-auto shadow-[2px_2px_0_0_#000000] bg-gray-300">
         {/* 창 제목 바 */}
         <div className="bg-blue-900 border-2 border-gray-300 text-white px-3 py-1 mb-8">
           <h2 className="text-xl font-bold">배너</h2>
