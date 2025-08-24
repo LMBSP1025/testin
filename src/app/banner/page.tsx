@@ -35,7 +35,7 @@ export default async function Banner({ searchParams }: { searchParams?: { page?:
             {currentPosts.map((post) => (
               <Link
                 key={post.slug}
-                href={`/posts/${post.slug}`}
+                href={`/posts/${post.id}`}
                 className="block bg-gray-200 px-4 py-3 shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white] hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#000000] transition-all duration-150"
               >
                 <div className="text-lg font-medium mb-1 text-black">{post.title}</div>
