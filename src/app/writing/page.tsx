@@ -59,7 +59,16 @@ export default async function Writing({ searchParams }: { searchParams?: { page?
                 className="block bg-gray-200 px-4 py-3 shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white] hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] transition-all duration-150"
               >
                 <div className="text-lg font-medium mb-1 text-black">{post.title}</div>
-                <div className="text-sm text-gray-600">{post.excerpt}</div>
+                <div className="text-sm text-gray-600 mb-2">{post.excerpt}</div>
+                <div className="text-xs text-gray-500">
+                  {new Date(post.date).toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </div>
               </Link>
             ))}
           </div>
