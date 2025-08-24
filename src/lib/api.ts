@@ -272,39 +272,68 @@ export async function getPostBySlug(slug: string) {
       console.log('All posts from Gist:', posts.map(p => ({ title: p.title, slug: p.slug, id: p.id })));
       
       // 정확한 slug 매칭을 먼저 시도
-      const exactMatch = posts.find(p => p.slug === slug);
-      if (exactMatch) {
+      const exactMatches = posts.filter(p => p.slug === slug);
+      if (exactMatches.length === 1) {
         console.log('Found exact slug match:', slug);
-        return exactMatch;
+        return exactMatches[0];
+      } else if (exactMatches.length > 1) {
+        console.warn(`Multiple posts found with same slug "${slug}":`, exactMatches.map(p => ({ id: p.id, title: p.title })));
+        // 중복된 slug가 있는 경우 가장 최근에 생성된 포스트 반환 (ID가 큰 것)
+        const latestPost = exactMatches.reduce((latest, current) => 
+          parseInt(current.id) > parseInt(latest.id) ? current : latest
+        );
+        console.log('Returning latest post with duplicate slug:', latestPost.id);
+        return latestPost;
       }
       
       // URL 디코딩된 slug로 검색
       const decodedSlug = decodeURIComponent(slug);
       if (decodedSlug !== slug) {
-        const decodedMatch = posts.find(p => p.slug === decodedSlug);
-        if (decodedMatch) {
+        const decodedMatches = posts.filter(p => p.slug === decodedSlug);
+        if (decodedMatches.length === 1) {
           console.log('Found decoded slug match:', decodedSlug);
-          return decodedMatch;
+          return decodedMatches[0];
+        } else if (decodedMatches.length > 1) {
+          console.warn(`Multiple posts found with decoded slug "${decodedSlug}":`, decodedMatches.map(p => ({ id: p.id, title: p.title })));
+          const latestPost = decodedMatches.reduce((latest, current) => 
+            parseInt(current.id) > parseInt(latest.id) ? current : latest
+          );
+          console.log('Returning latest post with duplicate decoded slug:', latestPost.id);
+          return latestPost;
         }
       }
       
       // .md 확장자 제거 후 검색
       const slugWithoutMd = slug.replace(/\.md$/, '');
       if (slugWithoutMd !== slug) {
-        const mdMatch = posts.find(p => p.slug === slugWithoutMd);
-        if (mdMatch) {
+        const mdMatches = posts.filter(p => p.slug === slugWithoutMd);
+        if (mdMatches.length === 1) {
           console.log('Found slug without .md match:', slugWithoutMd);
-          return mdMatch;
+          return mdMatches[0];
+        } else if (mdMatches.length > 1) {
+          console.warn(`Multiple posts found with slug without .md "${slugWithoutMd}":`, mdMatches.map(p => ({ id: p.id, title: p.title })));
+          const latestPost = mdMatches.reduce((latest, current) => 
+            parseInt(current.id) > parseInt(latest.id) ? current : latest
+          );
+          console.log('Returning latest post with duplicate slug without .md:', latestPost.id);
+          return latestPost;
         }
       }
       
       // 디코딩 후 .md 제거한 slug로 검색
       const decodedWithoutMd = decodeURIComponent(slug).replace(/\.md$/, '');
       if (decodedWithoutMd !== slugWithoutMd) {
-        const decodedMdMatch = posts.find(p => p.slug === decodedWithoutMd);
-        if (decodedMdMatch) {
+        const decodedMdMatches = posts.filter(p => p.slug === decodedWithoutMd);
+        if (decodedMdMatches.length === 1) {
           console.log('Found decoded slug without .md match:', decodedWithoutMd);
-          return decodedMdMatch;
+          return decodedMdMatches[0];
+        } else if (decodedMdMatches.length > 1) {
+          console.warn(`Multiple posts found with decoded slug without .md "${decodedWithoutMd}":`, decodedMdMatches.map(p => ({ id: p.id, title: p.title })));
+          const latestPost = decodedMdMatches.reduce((latest, current) => 
+            parseInt(current.id) > parseInt(latest.id) ? current : latest
+          );
+          console.log('Returning latest post with duplicate decoded slug without .md:', latestPost.id);
+          return latestPost;
         }
       }
       
@@ -365,16 +394,67 @@ export async function getPostBySlug(slug: string) {
       coverImage: data.coverImage || "",
       images: data.images || [], // images 필드 추가
       excerpt: data.excerpt || "",
-      ogImage: data.ogImage || { url: "" },
-      content,
+      ogImage: { url: "" },
+      content: data.content || "",
       preview: Boolean(data.preview),
-      category: data.category || 'fiction', // 기본 카테고리 설정
-      updatedAt: getSafeDate(data.updatedAt || data.date), // 안전한 날짜 처리
-      playlistId: data.playlistId,
-      playlistTitle: data.playlistTitle,
+      category: data.category || "fiction",
+      updatedAt: data.updatedAt || getSafeDate(data.date),
+      playlistId: data.playlistId || "",
+      playlistTitle: data.playlistTitle || "",
     };
   } catch (error) {
     console.error(`포스트 읽기 실패 (${slug}):`, error);
+    return null;
+  }
+}
+
+// ID로 포스트 찾기
+export async function getPostById(id: string) {
+  try {
+    // Vercel 환경에서 Gist 사용 가능하면 Gist에서 검색
+    if (isVercelEnvironment() && isGistAvailable()) {
+      console.log('Vercel environment with Gist, searching by ID');
+      console.log('Looking for ID:', id);
+      const posts = await getPostsFromGist();
+      console.log('All posts from Gist:', posts.map(p => ({ title: p.title, slug: p.slug, id: p.id })));
+      
+      const post = posts.find(p => p.id === id);
+      if (post) {
+        console.log('Found post by ID:', id);
+        return post;
+      }
+      
+      console.log('No post found with ID:', id);
+      console.log('Available IDs:', posts.map(p => p.id));
+      return null;
+    }
+
+    // Vercel 환경이지만 Gist 설정이 없으면 실패
+    if (isVercelEnvironment()) {
+      console.log('Vercel environment detected, but no Gist configured');
+      return null;
+    }
+
+    // 로컬 환경에서는 파일 시스템 사용
+    if (!fs.existsSync(postsDirectory)) {
+      return null;
+    }
+    
+    const slugs = getPostSlugs();
+    const posts = await Promise.all(
+      slugs.map(async (slug) => await getPostBySlug(slug))
+    );
+    
+    const post = posts.find(p => p && p.id === id);
+    if (post) {
+      console.log('Found post by ID (local):', id);
+      return post;
+    }
+    
+    console.log('No post found with ID (local):', id);
+    return null;
+  } catch (error) {
+    console.error(`포스트 읽기 실패 (ID: ${id}):`, error);
     return null;
   }
 }
