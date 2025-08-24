@@ -470,58 +470,107 @@ export async function getPostById(id: string) {
 }
 
 export async function getAllPosts(): Promise<Post[]> {
-  // Vercel 환경에서 Gist 사용 가능하면 Gist에서 가져오기
-  if (isVercelEnvironment() && isGistAvailable()) {
-    console.log('Vercel environment with Gist, fetching from Gist');
-    const posts = await getPostsFromGist();
-    
-    // 날짜를 Date 객체로 변환하여 정확한 정렬
-    const sortedPosts = posts.sort((post1, post2) => {
-      const date1 = new Date(post1.date || 0);
-      const date2 = new Date(post2.date || 0);
-      return date2.getTime() - date1.getTime(); // 최신 날짜가 먼저 오도록
-    });
-    
-    console.log('Posts after sorting in getAllPosts:', sortedPosts.map((post, index) => ({
-      index,
-      title: post.title,
-      slug: post.slug,
-      date: post.date,
-      id: post.id
-    })));
-    
-    return sortedPosts;
-  }
+  try {
+    // Vercel 환경에서 Gist 사용 가능하면 Gist에서 가져오기
+    if (isVercelEnvironment() && isGistAvailable()) {
+      console.log('Vercel environment with Gist, fetching from Gist');
+      try {
+        const posts = await getPostsFromGist();
+        console.log('Posts fetched from Gist:', posts.length);
+        
+        // posts가 배열이 아니거나 undefined인 경우 처리
+        if (!Array.isArray(posts)) {
+          console.warn('Posts from Gist is not an array:', posts);
+          return [];
+        }
+        
+        // 각 포스트의 필수 필드 검증
+        const validPosts = posts.filter(post => {
+          if (!post || typeof post !== 'object') {
+            console.warn('Invalid post object:', post);
+            return false;
+          }
+          
+          if (!post.id || !post.title) {
+            console.warn('Post missing required fields:', post);
+            return false;
+          }
+          
+          return true;
+        });
+        
+        console.log('Valid posts after filtering:', validPosts.length);
+        
+        // 날짜를 Date 객체로 변환하여 정확한 정렬
+        const sortedPosts = validPosts.sort((post1, post2) => {
+          try {
+            const date1 = new Date(post1.date || 0);
+            const date2 = new Date(post2.date || 0);
+            return date2.getTime() - date1.getTime(); // 최신 날짜가 먼저 오도록
+          } catch (sortError) {
+            console.warn('Error sorting posts by date:', sortError);
+            return 0;
+          }
+        });
+        
+        console.log('Posts after sorting in getAllPosts:', sortedPosts.map((post, index) => ({
+          index,
+          title: post.title,
+          slug: post.slug,
+          date: post.date,
+          id: post.id
+        })));
+        
+        return sortedPosts;
+      } catch (gistError) {
+        console.error('Error fetching from Gist:', gistError);
+        return [];
+      }
+    }
 
-  // Vercel 환경이지만 Gist 설정이 없으면 빈 배열
-  if (isVercelEnvironment()) {
-    console.log('Vercel environment detected, but no Gist configured');
+    // Vercel 환경이지만 Gist 설정이 없으면 빈 배열
+    if (isVercelEnvironment()) {
+      console.log('Vercel environment detected, but no Gist configured');
+      return [];
+    }
+
+    // 로컬 환경에서는 파일 시스템 사용
+    try {
+      const slugs = getPostSlugs();
+      const posts = await Promise.all(
+        slugs.map(async (slug) => await getPostBySlug(slug))
+      );
+      
+      const filteredAndSortedPosts = posts
+        .filter((post): post is NonNullable<typeof post> => post !== null)
+        .sort((post1, post2) => {
+          try {
+            const date1 = new Date(post1.date || 0);
+            const date2 = new Date(post2.date || 0);
+            return date2.getTime() - date1.getTime(); // 최신 날짜가 먼저 오도록
+          } catch (sortError) {
+            console.warn('Error sorting posts by date (local):', sortError);
+            return 0;
+          }
+        });
+      
+      console.log('Posts after sorting in getAllPosts (local):', filteredAndSortedPosts.map((post, index) => ({
+        index,
+        title: post.title,
+        slug: post.slug,
+        date: post.date,
+        id: post.id
+      })));
+      
+      return filteredAndSortedPosts;
+    } catch (localError) {
+      console.error('Error reading local posts:', localError);
+      return [];
+    }
+  } catch (error) {
+    console.error('Unexpected error in getAllPosts:', error);
     return [];
   }
-
-  // 로컬 환경에서는 파일 시스템 사용
-  const slugs = getPostSlugs();
-  const posts = await Promise.all(
-    slugs.map(async (slug) => await getPostBySlug(slug))
-  );
-  
-  const filteredAndSortedPosts = posts
-    .filter((post): post is NonNullable<typeof post> => post !== null)
-    .sort((post1, post2) => {
-      const date1 = new Date(post1.date || 0);
-      const date2 = new Date(post2.date || 0);
-      return date2.getTime() - date1.getTime(); // 최신 날짜가 먼저 오도록
-    });
-  
-  console.log('Posts after sorting in getAllPosts (local):', filteredAndSortedPosts.map((post, index) => ({
-    index,
-    title: post.title,
-    slug: post.slug,
-    date: post.date,
-    id: post.id
-  })));
-  
-  return filteredAndSortedPosts;
 }
 
 export function getPostsByCategory(category: string): Promise<Post[]> {
@@ -563,6 +612,10 @@ export function getPostsByCategory(category: string): Promise<Post[]> {
     });
     
     return filteredPosts;
+  }).catch(error => {
+    console.error(`Error in getPostsByCategory for category "${category}":`, error);
+    // 에러 발생 시 빈 배열 반환하여 페이지가 완전히 깨지지 않도록 함
+    return [];
   });
 }
 

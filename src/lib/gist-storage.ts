@@ -71,9 +71,22 @@ export async function getPostsFromGist(): Promise<Post[]> {
         } as RequestInit);
         if (rawResp.ok) {
           const text = await rawResp.text();
-          const posts = JSON.parse(text);
-          console.log('Parsed posts from raw_url:', Array.isArray(posts) ? posts.length : 'not array');
-          return posts;
+          try {
+            const posts = JSON.parse(text);
+            console.log('Parsed posts from raw_url:', Array.isArray(posts) ? posts.length : 'not array');
+            
+            // posts가 배열인지 확인
+            if (Array.isArray(posts)) {
+              return posts;
+            } else {
+              console.warn('Posts from raw_url is not an array:', typeof posts);
+              return [];
+            }
+          } catch (parseError) {
+            console.error('JSON parse error from raw_url:', parseError);
+            console.error('Raw content:', text.substring(0, 200) + '...');
+            return [];
+          }
         } else {
           console.warn('raw_url fetch failed, status:', rawResp.status);
         }
@@ -84,9 +97,22 @@ export async function getPostsFromGist(): Promise<Post[]> {
 
     // raw_url 사용 실패 시, 응답에 포함된 content 사용
     if (postsFile.content) {
-      const posts = JSON.parse(postsFile.content);
-      console.log('Parsed posts from embedded content:', Array.isArray(posts) ? posts.length : 'not array');
-      return posts;
+      try {
+        const posts = JSON.parse(postsFile.content);
+        console.log('Parsed posts from embedded content:', Array.isArray(posts) ? posts.length : 'not array');
+        
+        // posts가 배열인지 확인
+        if (Array.isArray(posts)) {
+          return posts;
+        } else {
+          console.warn('Posts from embedded content is not an array:', typeof posts);
+          return [];
+        }
+      } catch (parseError) {
+        console.error('JSON parse error from embedded content:', parseError);
+        console.error('Content preview:', postsFile.content.substring(0, 200) + '...');
+        return [];
+      }
     }
 
     console.warn('posts.json에 content가 없고 raw_url도 접근 실패');
