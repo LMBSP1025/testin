@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getPostBySlug } from "@/lib/api";
-import { getMainBannerFromGist } from "@/lib/gist-storage";
+import { getMainBannerFromGist } from "@/lib/gist-storage"; 
 
 // 동적 렌더링 강제
 export const dynamic = 'force-dynamic';

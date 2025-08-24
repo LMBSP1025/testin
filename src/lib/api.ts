@@ -160,7 +160,12 @@ function getCurrentDate(): string {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  
+  // ISO 형식으로 반환 (YYYY-MM-DDTHH:mm:ss.sssZ)
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000Z`;
 }
 
 // 날짜 형식 검증
@@ -183,22 +188,29 @@ function getSafeDate(existingDate?: string): string {
 function generateSafeSlug(title: string): string {
   if (!title || typeof title !== 'string') {
     console.warn('Invalid title for slug generation:', title);
-    return 'post-' + Date.now();
+    return 'post-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
   }
   
+  // 한자, 한글, 영문, 숫자만 허용하고 특수문자 제거
   let slug = title
     .trim()
-    .replace(/[^\w\s가-힣]/g, '')
+    .replace(/[^\w\s가-힣一-龯]/g, '') // 한자 범위 추가 (一-龯)
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
   
-  if (slug.length > 50) {
+  // slug가 비어있거나 너무 짧으면 타임스탬프와 랜덤 문자열 추가
+  if (!slug || slug.length < 3) {
+    slug = 'post-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  } else if (slug.length > 50) {
     slug = slug.substring(0, 50);
   }
   
-  if (!slug) {
-    slug = 'post-' + Date.now();
+  // 고유성을 위해 타임스탬프와 랜덤 문자열 추가 (한자 다섯개 등 짧은 제목의 경우)
+  if (slug.length <= 15) {
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substr(2, 6);
+    slug = slug + '-' + timestamp + '-' + randomStr;
   }
   
   return slug;
@@ -351,7 +363,13 @@ export async function getAllPosts(): Promise<Post[]> {
   if (isVercelEnvironment() && isGistAvailable()) {
     console.log('Vercel environment with Gist, fetching from Gist');
     const posts = await getPostsFromGist();
-    return posts.sort((post1, post2) => (post1.date > post2.date ? -1 : 1));
+    
+    // 날짜를 Date 객체로 변환하여 정확한 정렬
+    return posts.sort((post1, post2) => {
+      const date1 = new Date(post1.date || 0);
+      const date2 = new Date(post2.date || 0);
+      return date2.getTime() - date1.getTime(); // 최신 날짜가 먼저 오도록
+    });
   }
 
   // Vercel 환경이지만 Gist 설정이 없으면 빈 배열
@@ -368,19 +386,46 @@ export async function getAllPosts(): Promise<Post[]> {
   
   return posts
     .filter((post): post is NonNullable<typeof post> => post !== null)
-    .sort((post1, post2) => (post1.date > post2.date ? -1 : 1));
+    .sort((post1, post2) => {
+      const date1 = new Date(post1.date || 0);
+      const date2 = new Date(post2.date || 0);
+      return date2.getTime() - date1.getTime(); // 최신 날짜가 먼저 오도록
+    });
 }
 
 export function getPostsByCategory(category: string): Promise<Post[]> {
   console.log(`getPostsByCategory called with category: "${category}"`);
   return getAllPosts().then(posts => {
     console.log(`Total posts found: ${posts.length}`);
+    
+    // 모든 포스트의 정보를 로그로 출력
+    posts.forEach((post, index) => {
+      console.log(`Post ${index + 1}:`, {
+        title: post.title,
+        slug: post.slug,
+        category: post.category,
+        date: post.date
+      });
+    });
+    
     const filteredPosts = posts.filter(post => {
       const matches = post.category === category;
       console.log(`Post "${post.title}" has category "${post.category}" - matches: ${matches}`);
       return matches;
     });
+    
     console.log(`Posts filtered for category "${category}": ${filteredPosts.length}`);
+    
+    // 필터링된 포스트의 정보도 로그로 출력
+    filteredPosts.forEach((post, index) => {
+      console.log(`Filtered Post ${index + 1}:`, {
+        title: post.title,
+        slug: post.slug,
+        category: post.category,
+        date: post.date
+      });
+    });
+    
     return filteredPosts;
   });
 }
