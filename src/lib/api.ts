@@ -157,44 +157,36 @@ function generateId(): string {
 // 현재 날짜 문자열 생성
 export function getCurrentDate(): string {
   const now = new Date();
+  console.log('getCurrentDate - Raw UTC time:', now.toISOString());
+  console.log('getCurrentDate - Raw UTC time object:', now);
   
-  // 한국 시간대(UTC+9)로 변환
-  const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  // UTC 시간을 그대로 반환 (9시간 더하지 않음)
+  const isoString = now.toISOString();
+  console.log('getCurrentDate - Returning UTC ISO string:', isoString);
   
-  const year = koreaTime.getUTCFullYear();
-  const month = String(koreaTime.getUTCMonth() + 1).padStart(2, '0');
-  const day = koreaTime.getUTCDate();
-  const hours = koreaTime.getUTCHours();
-  const minutes = koreaTime.getUTCMinutes();
-  const seconds = koreaTime.getUTCSeconds();
-  
-  // 한국 시간 형식으로 반환 (YYYY-MM-DDTHH:mm:ss.sss+09:00)
-  const koreaTimeString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.000+09:00`;
-  
-  console.log('getCurrentDate called:', {
-    originalTime: now.toISOString(),
-    koreaTime: koreaTime.toISOString(),
-    koreaTimeString: koreaTimeString,
-    hours: hours,
-    minutes: minutes
-  });
-  
-  return koreaTimeString;
+  return isoString;
 }
 
 // 날짜 형식 검증
 export function isValidDate(dateString: string): boolean {
-  if (!dateString || typeof dateString !== 'string') return false;
-  
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return false;
-  
-  // ISO 형식 (YYYY-MM-DDTHH:mm:ss.sssZ), 한국 시간 형식 (+09:00), 또는 일반 날짜 형식 (YYYY-MM-DD) 모두 허용
-  const isoPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
-  const koreaTimePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+09:00/;
-  const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-  
-  return isoPattern.test(dateString) || koreaTimePattern.test(dateString) || datePattern.test(dateString);
+  // 빈 문자열이나 null 체크
+  if (!dateString || typeof dateString !== 'string') {
+    return false;
+  }
+
+  // ISO 형식 (YYYY-MM-DDTHH:mm:ss.sssZ) 체크
+  if (dateString.includes('T') && (dateString.endsWith('Z') || dateString.includes('+'))) {
+    const date = new Date(dateString);
+    return !isNaN(date.getTime());
+  }
+
+  // YYYY-MM-DD 형식 체크
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    const date = new Date(dateString);
+    return !isNaN(date.getTime());
+  }
+
+  return false;
 }
 
 // 안전한 날짜 문자열 생성 (기존 날짜가 유효하지 않으면 현재 날짜 사용)
