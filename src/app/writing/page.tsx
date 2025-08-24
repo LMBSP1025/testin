@@ -67,14 +67,6 @@ export default async function Writing({ searchParams }: { searchParams?: { page?
                 <Link
                   key={post.id}
                   href={`/posts/${post.id}`}
-                  onClick={() => {
-                    console.log('Post card clicked:', {
-                      title: post.title,
-                      slug: post.slug,
-                      id: post.id,
-                      linkUrl: `/posts/${post.id}`
-                    });
-                  }}
                   className="block bg-gray-200 px-4 py-3 shadow-[inset_-2px_-2px_0_0_#00000050,inset_2px_2px_0_0_white] hover:shadow-[inset_-2px_-2px_0_0_white,inset_2px_2px_0_0_#00000050,2px_2px_0_0_#000000] transition-all duration-150"
                 >
                   <div className="text-lg font-medium mb-1 text-black">{post.title}</div>
