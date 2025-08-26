@@ -375,8 +375,21 @@ export default function MusicFooter({ playlistId, playlistTitle }: MusicFooterPr
           // 마지막 곡이 끝났으면 첫 번째 곡부터 다시 재생
           console.log('Playlist ended, restarting from beginning');
           setTimeout(() => {
-            if (playerRef.current && typeof playerRef.current.playVideoAt === "function") {
-              playerRef.current.playVideoAt(0); // 첫 번째 곡(인덱스 0)부터 재생
+            if (playerRef.current && typeof playerRef.current.loadPlaylist === "function") {
+              // 플레이리스트를 처음부터 다시 로드
+              playerRef.current.loadPlaylist({
+                list: playlistId,
+                listType: "playlist",
+                index: 0
+              });
+              startTimeRef.current = Date.now();
+            } else if (playerRef.current && typeof playerRef.current.cuePlaylist === "function") {
+              // loadPlaylist가 지원되지 않는 경우 cuePlaylist 사용
+              playerRef.current.cuePlaylist({
+                list: playlistId,
+                listType: "playlist",
+                index: 0
+              });
               startTimeRef.current = Date.now();
             }
           }, 100);
