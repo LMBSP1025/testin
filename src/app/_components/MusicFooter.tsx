@@ -487,7 +487,39 @@ export default function MusicFooter({ playlistId, playlistTitle }: MusicFooterPr
 
   const prevVideo = () => {
     if (playerRef.current && typeof playerRef.current.previousVideo === "function") {
-      playerRef.current.previousVideo();
+      // 현재 플레이리스트 인덱스 확인
+      if (typeof playerRef.current.getPlaylistIndex === "function") {
+        const currentIndex = playerRef.current.getPlaylistIndex();
+        const playlistLength = playerRef.current.getPlaylist ? playerRef.current.getPlaylist().length : 0;
+        
+        console.log('Previous button clicked - Current index:', currentIndex, 'Playlist length:', playlistLength);
+        
+        // 첫 번째 곡인지 확인
+        if (currentIndex <= 0) {
+          // 첫 번째 곡이면 마지막 곡으로 이동
+          console.log('At first song, moving to last song');
+          if (typeof playerRef.current.loadPlaylist === "function") {
+            playerRef.current.loadPlaylist({
+              list: playlistId,
+              listType: "playlist",
+              index: playlistLength - 1
+            });
+          } else if (typeof playerRef.current.cuePlaylist === "function") {
+            playerRef.current.cuePlaylist({
+              list: playlistId,
+              listType: "playlist",
+              index: playlistLength - 1
+            });
+          }
+        } else {
+          // 중간 곡이면 이전 곡으로 이동
+          playerRef.current.previousVideo();
+        }
+      } else {
+        // getPlaylistIndex가 지원되지 않는 경우 기본 동작
+        playerRef.current.previousVideo();
+      }
+      
       // 이전 곡으로 이동 시 startTimeRef 재설정 및 duration 업데이트
       setTimeout(() => {
         if (startTimeRef.current > 0) {
@@ -507,7 +539,39 @@ export default function MusicFooter({ playlistId, playlistTitle }: MusicFooterPr
 
   const nextVideo = () => {
     if (playerRef.current && typeof playerRef.current.nextVideo === "function") {
-      playerRef.current.nextVideo();
+      // 현재 플레이리스트 인덱스 확인
+      if (typeof playerRef.current.getPlaylistIndex === "function") {
+        const currentIndex = playerRef.current.getPlaylistIndex();
+        const playlistLength = playerRef.current.getPlaylist ? playerRef.current.getPlaylist().length : 0;
+        
+        console.log('Next button clicked - Current index:', currentIndex, 'Playlist length:', playlistLength);
+        
+        // 마지막 곡인지 확인
+        if (currentIndex >= playlistLength - 1) {
+          // 마지막 곡이면 첫 번째 곡으로 이동
+          console.log('At last song, moving to first song');
+          if (typeof playerRef.current.loadPlaylist === "function") {
+            playerRef.current.loadPlaylist({
+              list: playlistId,
+              listType: "playlist",
+              index: 0
+            });
+          } else if (typeof playerRef.current.cuePlaylist === "function") {
+            playerRef.current.cuePlaylist({
+              list: playlistId,
+              listType: "playlist",
+              index: 0
+            });
+          }
+        } else {
+          // 중간 곡이면 다음 곡으로 이동
+          playerRef.current.nextVideo();
+        }
+      } else {
+        // getPlaylistIndex가 지원되지 않는 경우 기본 동작
+        playerRef.current.nextVideo();
+      }
+      
       // 다음 곡으로 이동 시 startTimeRef 재설정 및 duration 업데이트
       setTimeout(() => {
         if (startTimeRef.current > 0) {
