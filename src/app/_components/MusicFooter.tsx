@@ -362,13 +362,42 @@ export default function MusicFooter({ playlistId, playlistTitle }: MusicFooterPr
       setIsPlaying(false);
     } else if (event.data === (window as any).YT.PlayerState.ENDED) {
       setIsPlaying(false);
-      // 곡이 끝나면 자동으로 다음 곡으로 넘어가기
-      if (playerRef.current && typeof playerRef.current.nextVideo === "function") {
-        setTimeout(() => {
-          playerRef.current.nextVideo();
-          // 다음 곡으로 넘어간 후 startTimeRef 재설정
-          startTimeRef.current = Date.now();
-        }, 100);
+      
+      // 현재 플레이리스트 인덱스 확인
+      if (playerRef.current && typeof playerRef.current.getPlaylistIndex === "function") {
+        const currentIndex = playerRef.current.getPlaylistIndex();
+        const playlistLength = playerRef.current.getPlaylist ? playerRef.current.getPlaylist().length : 0;
+        
+        console.log('Video ended - Current index:', currentIndex, 'Playlist length:', playlistLength);
+        
+        // 마지막 곡이 끝났는지 확인
+        if (currentIndex >= playlistLength - 1) {
+          // 마지막 곡이 끝났으면 첫 번째 곡부터 다시 재생
+          console.log('Playlist ended, restarting from beginning');
+          setTimeout(() => {
+            if (playerRef.current && typeof playerRef.current.playVideoAt === "function") {
+              playerRef.current.playVideoAt(0); // 첫 번째 곡(인덱스 0)부터 재생
+              startTimeRef.current = Date.now();
+            }
+          }, 100);
+        } else {
+          // 중간 곡이 끝났으면 다음 곡으로 넘어가기
+          if (playerRef.current && typeof playerRef.current.nextVideo === "function") {
+            setTimeout(() => {
+              playerRef.current.nextVideo();
+              // 다음 곡으로 넘어간 후 startTimeRef 재설정
+              startTimeRef.current = Date.now();
+            }, 100);
+          }
+        }
+      } else {
+        // getPlaylistIndex가 지원되지 않는 경우 기본 동작
+        if (playerRef.current && typeof playerRef.current.nextVideo === "function") {
+          setTimeout(() => {
+            playerRef.current.nextVideo();
+            startTimeRef.current = Date.now();
+          }, 100);
+        }
       }
     } else if (event.data === (window as any).YT.PlayerState.CUED) {
       // 새로운 곡이 로드되었을 때 duration과 startTimeRef 업데이트
